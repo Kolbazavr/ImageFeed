@@ -6,15 +6,14 @@ final class ImagesListViewController: UIViewController {
     private let photosName: [String] = Array(0..<20).map{ "\($0)" }
     private let currentDate = DateFormatter.defaultDateTime.string(from: Date())
     
-    private enum Constants {
-        static let likeActiveImageName = "like_button_on"
-        static let likeInactiveImageName = "like_button_off"
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
 
         tableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        scrollViewDidScroll(tableView)
     }
 }
 
@@ -22,17 +21,17 @@ extension ImagesListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         photosName.count
     }
-
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let imageListCell = tableView.dequeueReusableCell(
-                    withIdentifier: ImagesListCell.reuseIdentifier,
-                    for: indexPath
-                ) as? ImagesListCell else {
-                    return UITableViewCell()
-                }
-
+            withIdentifier: ImagesListCell.reuseIdentifier,
+            for: indexPath
+        ) as? ImagesListCell else {
+            return UITableViewCell()
+        }
+        
         configCell(for: imageListCell, with: indexPath)
-
+        
         return imageListCell
     }
 }
@@ -42,9 +41,10 @@ extension ImagesListViewController {
         guard let image = UIImage(named: photosName[indexPath.row]) else { return }
 
         cell.cellImage.image = image
+        cell.cellImage.layer.cornerRadius = 16
         cell.dateLabel.text = currentDate
 
-        let likeImage = indexPath.row % 2 == 0 ? UIImage(named: Constants.likeActiveImageName) : UIImage(named: Constants.likeInactiveImageName)
+        let likeImage = indexPath.row % 2 == 0 ? UIImage(resource: .likeButtonOff) : UIImage(resource: .likeButtonOn)
         cell.likeButton.setImage(likeImage, for: .normal)
     }
 }
@@ -61,5 +61,16 @@ extension ImagesListViewController: UITableViewDelegate {
         let scale = imageViewWidth / imageWidth
         let cellHeight = image.size.height * scale + imageInsets.top + imageInsets.bottom
         return cellHeight
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let visibleCells = tableView.visibleCells.compactMap { $0 as? ImagesListCell }
+        for cell in visibleCells {
+            let cellCenter = scrollView.convert(cell.center, to: view)
+            let scrollCenter = view.bounds.midY
+            let maxOffset = view.bounds.height
+            let relativeOffsetY = (cellCenter.y - scrollCenter) / maxOffset
+            cell.parallax(offset: relativeOffsetY)
+        }
     }
 }
