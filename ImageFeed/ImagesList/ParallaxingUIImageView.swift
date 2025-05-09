@@ -1,6 +1,6 @@
 import UIKit
 
-class ParallaxImageView: UIImageView {
+final class ParallaxImageView: UIImageView {
 
     func parallaxEffect(offset: CGFloat) {
         let reducedScale: CGFloat = 0.85
