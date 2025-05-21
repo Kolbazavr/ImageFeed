@@ -5,7 +5,13 @@ final class ProfileViewController: UIViewController {
     private let nameLabel = UILabel()
     private let loginNameLabel = UILabel()
     private let descriptionLabel = UILabel()
-    private let logoutButton = UIButton()
+    
+    private lazy var logoutButton: UIButton = {
+        let button = UIButton()
+        button.setImage(.logoutButton, for: .normal)
+        button.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
+        return button
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,9 +33,6 @@ final class ProfileViewController: UIViewController {
         descriptionLabel.text = "Hello, world!"
         descriptionLabel.textColor = .ypWhite
         descriptionLabel.font = .systemFont(ofSize: 13, weight: .regular)
-        
-        logoutButton.setImage(.logoutButton, for: .normal)
-        logoutButton.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
         
         [avatarImageView, nameLabel, loginNameLabel, descriptionLabel, logoutButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
