@@ -5,7 +5,7 @@ final class OAuth2TokenStorage {
     private init() {}
     
     var accessToken: String? {
-        get { UserDefaults.standard.string(forKey: KeyConstants.accessTokenKey) }
-        set { UserDefaults.standard.set(newValue, forKey: KeyConstants.accessTokenKey) }
+        get { UserDefaults.standard.string(forKey: Constants.accessTokenKey) }
+        set { UserDefaults.standard.set(newValue, forKey: Constants.accessTokenKey) }
     }
 }
