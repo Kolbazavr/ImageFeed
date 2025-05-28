@@ -1,17 +1,13 @@
 import UIKit
+//TODO: remove after test:
+import WebKit
 
 final class ProfileViewController: UIViewController {
     private let avatarImageView = UIImageView()
     private let nameLabel = UILabel()
     private let loginNameLabel = UILabel()
     private let descriptionLabel = UILabel()
-    
-    private lazy var logoutButton: UIButton = {
-        let button = UIButton()
-        button.setImage(.logoutButton, for: .normal)
-        button.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
-        return button
-    }()
+    private let logoutButton = UIButton()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,6 +29,9 @@ final class ProfileViewController: UIViewController {
         descriptionLabel.text = "Hello, world!"
         descriptionLabel.textColor = .ypWhite
         descriptionLabel.font = .systemFont(ofSize: 13, weight: .regular)
+        
+        logoutButton.setImage(.logoutButton, for: .normal)
+        logoutButton.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
         
         [avatarImageView, nameLabel, loginNameLabel, descriptionLabel, logoutButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
@@ -66,6 +65,31 @@ final class ProfileViewController: UIViewController {
     }
     
     @objc private func didTapLogoutButton() {
-        print("logoutTapped")
+        UserDefaults.standard.removeAll()
+        print("UserDefaults removed")
+        
+//TODO: Remove after test:
+        let activityIndicatorView = UIActivityIndicatorView(style: .large)
+        activityIndicatorView.startAnimating()
+        activityIndicatorView.color = .ypWhite
+        self.view.addSubview(activityIndicatorView)
+        activityIndicatorView.center = self.view.center
+        
+        let cookieStore = WKWebsiteDataStore.default().httpCookieStore
+        cookieStore.getAllCookies { cookies in
+            for cookie in cookies {
+                cookieStore.delete(cookie)
+            }
+        }
+        
+        let websiteDataTypes = Set([WKWebsiteDataTypeCookies, WKWebsiteDataTypeLocalStorage])
+            WKWebsiteDataStore.default().removeData(ofTypes: websiteDataTypes, modifiedSince: Date.distantPast, completionHandler: {})
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            guard let window = UIApplication.shared.windows.first else { fatalError("Invalid Configuration") }
+            let splashViewController = UIStoryboard(name: "Main", bundle: .main)
+                .instantiateViewController(withIdentifier: "SplashViewController")
+            window.rootViewController = splashViewController
+        }
     }
 }
