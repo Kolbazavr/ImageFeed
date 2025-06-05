@@ -1,15 +1,17 @@
 import UIKit
+import ProgressHUD
 
 final class AuthViewController: UIViewController {
+    
+    weak var delegate: AuthViewControllerDelegate?
+    
     private let tokenStorage = OAuth2TokenStorage.shared
     private let oauth2Service = OAuth2Service.shared
     private let showWebViewSegueIdentifier = "ShowWebView"
     
-    weak var delegate: AuthViewControllerDelegate?
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureBackButton()
+        setupUI()
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -25,11 +27,35 @@ final class AuthViewController: UIViewController {
         }
     }
     
-    private func configureBackButton() {
-        navigationController?.navigationBar.backIndicatorImage = UIImage(named: "nav_back_button_white")
-        navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(named: "nav_back_button_white")
-        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-        navigationItem.backBarButtonItem?.tintColor = .ypBlack
+    private func fetchAndSaveOAuthToken(_ code: String) async throws {
+        let token = try await oauth2Service.fetchOAuthToken(code: code)
+        print("Received token: \(token)")
+        tokenStorage.accessToken = token
+    }
+    
+    private func fetchOAuthToken(_ code: String) {
+        Task { @MainActor in
+            do {
+                ProgressHUD.animate()
+                try await fetchAndSaveOAuthToken(code)
+                ProgressHUD.dismiss()
+                delegate?.authViewController(self, didAuthenticateWithCode: code)
+            } catch {
+                ProgressHUD.dismiss()
+                showErrorAlert(error: error)
+                print("Failed to fetch token: \(error)")
+            }
+        }
+    }
+    
+    private func showErrorAlert(error: Error) {
+        let alert = UIAlertController(
+            title: "Something went wrong:",
+            message: error.localizedDescription,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Okay", style: .default))
+        present(alert, animated: true)
     }
 }
 
@@ -42,18 +68,17 @@ extension AuthViewController: WebViewViewControllerDelegate {
     func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
         navigationController?.popViewController(animated: true)
     }
-    
-    func fetchOAuthToken(_ code: String) {
-        oauth2Service.fetchOAuthToken(code: code) { [weak self] result in
-            guard let self else { return }
-            switch result {
-            case .success(let token):
-                tokenStorage.accessToken = token
-                delegate?.authViewController(self, didAuthenticateWithCode: code)
-                print("Received token: \(token)")
-            case .failure(let error):
-                print("Failed to fetch token: \(error)")
-            }
-        }
+}
+
+extension AuthViewController {
+    private func setupUI() {
+        navigationController?.navigationBar.backIndicatorImage = UIImage(named: "nav_back_button_white")
+        navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(named: "nav_back_button_white")
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+        navigationItem.backBarButtonItem?.tintColor = .ypBlack
+        
+        ProgressHUD.animationType = .pacmanProgress
+        ProgressHUD.colorHUD = .yellow
+        ProgressHUD.colorBackground = .clear
     }
 }

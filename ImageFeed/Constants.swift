@@ -12,26 +12,24 @@ enum Constants {
     static let secretKey = "N7rvuvBRH6LLroOzUK7He-vSm225xK6qkfxe0yAd5Zo"
     static let redirectUri = "urn:ietf:wg:oauth:2.0:oob"
     static let accessScope = "public+read_user+write_likes"
-    static let defaultBaseURL = URL(string: "https://api.unsplash.com")
+//    static let defaultBaseURL = URL(string: "https://api.unsplash.com")
+    static let noAPIbaseURL = URL(string: "https://unsplash.com")
+    static let apiBaseURL = URL(string: "https://api.unsplash.com")
     
-    static let unsplashAuthorizeURLString = "https://unsplash.com/oauth/authorize"
-    static let tokenURLString = "https://unsplash.com/oauth/token"
+    
+//    static let unsplashAuthorizeURLString = "https://unsplash.com/oauth/authorize"
+//    static let tokenURLString = "https://unsplash.com/oauth/token"
     
     static let accessTokenKey = "accessToken"
 }
 
-//TODO: To use later?:
-//extension Constants {
-//    enum Secrets {
-//        static let accessKey = Secrets.environmentVariable(named: "UNSPLASH_ACCESS_KEY") ?? ""
-//        static let secretKey = Secrets.environmentVariable(named: "UNSPLASH_SECRET_KEY") ?? ""
-//        
-//        private static func environmentVariable(named name: String) -> String? {
-//            guard let infoDictionary = Bundle.main.infoDictionary, let value = infoDictionary[name] as? String else {
-//                print("!! Missing Environment Variable: '\(name)'")
-//                return nil
-//            }
-//            return value
-//        }
-//    }
-//}
+public enum WebKeyConstants {
+    static let clientID = "client_id"
+    static let clientSecret = "client_secret"
+    static let redirectURI = "redirect_uri"
+    static let responseType = "response_type"
+    static let scope = "scope"
+    static let grantType = "grant_type"
+    static let authorizationCode = "authorization_code"
+    static let code = "code"
+}

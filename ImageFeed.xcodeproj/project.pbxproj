@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		EC78A3BD2DF0F52F007F1D97 /* SwiftKeychainWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = EC78A3BC2DF0F52F007F1D97 /* SwiftKeychainWrapper */; };
+		EC78A3C02DF10B3A007F1D97 /* ProgressHUD in Frameworks */ = {isa = PBXBuildFile; productRef = EC78A3BF2DF10B3A007F1D97 /* ProgressHUD */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		ECC609B12DC2FD88003D7645 /* ImageFeed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageFeed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +41,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EC78A3BD2DF0F52F007F1D97 /* SwiftKeychainWrapper in Frameworks */,
+				EC78A3C02DF10B3A007F1D97 /* ProgressHUD in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +85,8 @@
 			);
 			name = ImageFeed;
 			packageProductDependencies = (
+				EC78A3BC2DF0F52F007F1D97 /* SwiftKeychainWrapper */,
+				EC78A3BF2DF10B3A007F1D97 /* ProgressHUD */,
 			);
 			productName = ImageFeed;
 			productReference = ECC609B12DC2FD88003D7645 /* ImageFeed.app */;
@@ -107,6 +116,10 @@
 			);
 			mainGroup = ECC609A82DC2FD88003D7645;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				EC78A3BB2DF0F52F007F1D97 /* XCRemoteSwiftPackageReference "SwiftKeychainWrapper" */,
+				EC78A3BE2DF10B3A007F1D97 /* XCRemoteSwiftPackageReference "ProgressHUD" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = ECC609B22DC2FD88003D7645 /* Products */;
 			projectDirPath = "";
@@ -343,6 +356,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		EC78A3BB2DF0F52F007F1D97 /* XCRemoteSwiftPackageReference "SwiftKeychainWrapper" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jrendel/SwiftKeychainWrapper";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.1;
+			};
+		};
+		EC78A3BE2DF10B3A007F1D97 /* XCRemoteSwiftPackageReference "ProgressHUD" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/relatedcode/ProgressHUD";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 14.1.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		EC78A3BC2DF0F52F007F1D97 /* SwiftKeychainWrapper */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EC78A3BB2DF0F52F007F1D97 /* XCRemoteSwiftPackageReference "SwiftKeychainWrapper" */;
+			productName = SwiftKeychainWrapper;
+		};
+		EC78A3BF2DF10B3A007F1D97 /* ProgressHUD */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EC78A3BE2DF10B3A007F1D97 /* XCRemoteSwiftPackageReference "ProgressHUD" */;
+			productName = ProgressHUD;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = ECC609A92DC2FD88003D7645 /* Project object */;
 }

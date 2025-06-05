@@ -67,6 +67,7 @@ final class ProfileViewController: UIViewController {
     @objc private func didTapLogoutButton() {
         UserDefaults.standard.removeAll()
         print("UserDefaults removed")
+        OAuth2TokenStorage.shared.removeToken()
         
 //TODO: Remove after test:
         let activityIndicatorView = UIActivityIndicatorView(style: .large)
