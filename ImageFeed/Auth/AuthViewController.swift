@@ -1,84 +1,67 @@
 import UIKit
 import ProgressHUD
 
-final class AuthViewController: UIViewController {
+final class AuthViewController: UIViewController, CoordinatedByAuthProtocol {
     
-    weak var delegate: AuthViewControllerDelegate?
+    weak var coordinator: AuthCoordinatorProtocol?
     
-    private let tokenStorage = OAuth2TokenStorage.shared
-    private let oauth2Service = OAuth2Service.shared
-    private let showWebViewSegueIdentifier = "ShowWebView"
+    private let loginButton = UIButton(type: .system)
+    private let uselessLogo = UIImageView(image: UIImage(resource: .authScreenLogo))
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
     }
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == showWebViewSegueIdentifier {
-            guard let webViewViewController = segue.destination as? WebViewViewController
-            else {
-                assertionFailure("Failed to prepare for \(showWebViewSegueIdentifier)")
-                return
-            }
-            webViewViewController.delegate = self
-        } else {
-            super.prepare(for: segue, sender: sender)
-        }
-    }
-    
-    private func fetchAndSaveOAuthToken(_ code: String) async throws {
-        let token = try await oauth2Service.fetchOAuthToken(code: code)
-        print("Received token: \(token)")
-        tokenStorage.accessToken = token
-    }
-    
-    private func fetchOAuthToken(_ code: String) {
-        Task { @MainActor in
-            do {
-                ProgressHUD.animate()
-                try await fetchAndSaveOAuthToken(code)
-                ProgressHUD.dismiss()
-                delegate?.authViewController(self, didAuthenticateWithCode: code)
-            } catch {
-                ProgressHUD.dismiss()
-                showErrorAlert(error: error)
-                print("Failed to fetch token: \(error)")
-            }
-        }
-    }
-    
-    private func showErrorAlert(error: Error) {
-        let alert = UIAlertController(
-            title: "Something went wrong:",
-            message: error.localizedDescription,
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "Okay", style: .default))
-        present(alert, animated: true)
+    @objc private func loginButtonTapped() {
+        coordinator?.showWebView()
     }
 }
 
 extension AuthViewController: WebViewViewControllerDelegate {
-    func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
-        navigationController?.popViewController(animated: true)
-        fetchOAuthToken(code)
+    func webViewViewController(didAuthenticateWithCode code: String) {
+        coordinator?.didAuth(with: code)
     }
     
     func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
-        navigationController?.popViewController(animated: true)
+        coordinator?.navigateBack()
     }
 }
 
 extension AuthViewController {
     private func setupUI() {
+        view.backgroundColor = .ypBlack
+        
+        uselessLogo.contentMode = .scaleAspectFit
+        
+        loginButton.setTitle("Войти", for: .normal)
+        loginButton.titleLabel?.font = .systemFont(ofSize: 17, weight: .bold)
+        loginButton.backgroundColor = .ypWhite
+        loginButton.tintColor = .ypBlack
+        loginButton.layer.cornerRadius = 16
+        loginButton.layer.masksToBounds = true
+        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
+        
+        [uselessLogo, loginButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
+        
+        NSLayoutConstraint.activate([
+            uselessLogo.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            uselessLogo.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            uselessLogo.heightAnchor.constraint(equalToConstant: 60),
+            uselessLogo.widthAnchor.constraint(equalToConstant: 60),
+            
+            loginButton.heightAnchor.constraint(equalToConstant: 48),
+            loginButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            loginButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -90),
+            loginButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16)
+        ])
+        
         navigationController?.navigationBar.backIndicatorImage = UIImage(named: "nav_back_button_white")
         navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(named: "nav_back_button_white")
         navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         navigationItem.backBarButtonItem?.tintColor = .ypBlack
-        
-        ProgressHUD.animationType = .pacmanProgress
-        ProgressHUD.colorHUD = .yellow
-        ProgressHUD.colorBackground = .clear
     }
 }

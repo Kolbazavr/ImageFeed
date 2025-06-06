@@ -5,11 +5,7 @@ final class OAuth2TokenStorage {
     static let shared = OAuth2TokenStorage()
     private let keyChainWrapper = KeychainWrapper.standard
     private init() {}
-    
-//    var accessToken: String? {
-//        get { UserDefaults.standard.string(forKey: Constants.accessTokenKey) }
-//        set { UserDefaults.standard.set(newValue, forKey: Constants.accessTokenKey) }
-//    }
+
     var accessToken: String? {
         get { keyChainWrapper.string(forKey: Constants.accessTokenKey) }
         set {

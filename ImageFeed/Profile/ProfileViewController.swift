@@ -2,7 +2,10 @@ import UIKit
 //TODO: remove after test:
 import WebKit
 
-final class ProfileViewController: UIViewController {
+final class ProfileViewController: UIViewController, CoordinatedByFeedProtocol {
+    
+    weak var coordinator: FeedCoordinatorProtocol?
+    
     private let avatarImageView = UIImageView()
     private let nameLabel = UILabel()
     private let loginNameLabel = UILabel()
@@ -65,17 +68,8 @@ final class ProfileViewController: UIViewController {
     }
     
     @objc private func didTapLogoutButton() {
-        UserDefaults.standard.removeAll()
-        print("UserDefaults removed")
-        OAuth2TokenStorage.shared.removeToken()
-        
-//TODO: Remove after test:
-        let activityIndicatorView = UIActivityIndicatorView(style: .large)
-        activityIndicatorView.startAnimating()
-        activityIndicatorView.color = .ypWhite
-        self.view.addSubview(activityIndicatorView)
-        activityIndicatorView.center = self.view.center
-        
+        print("Logging out...")
+
         let cookieStore = WKWebsiteDataStore.default().httpCookieStore
         cookieStore.getAllCookies { cookies in
             for cookie in cookies {
@@ -86,11 +80,6 @@ final class ProfileViewController: UIViewController {
         let websiteDataTypes = Set([WKWebsiteDataTypeCookies, WKWebsiteDataTypeLocalStorage])
             WKWebsiteDataStore.default().removeData(ofTypes: websiteDataTypes, modifiedSince: Date.distantPast, completionHandler: {})
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            guard let window = UIApplication.shared.windows.first else { fatalError("Invalid Configuration") }
-            let splashViewController = UIStoryboard(name: "Main", bundle: .main)
-                .instantiateViewController(withIdentifier: "SplashViewController")
-            window.rootViewController = splashViewController
-        }
+        coordinator?.logout()
     }
 }

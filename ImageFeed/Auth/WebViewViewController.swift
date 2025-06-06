@@ -1,16 +1,34 @@
 import UIKit
 @preconcurrency import WebKit
 
+final class NoStupidToolBarWebView: WKWebView {
+    override var inputAccessoryView: UIView? { return nil }
+}
+
 final class WebViewViewController: UIViewController {
-    @IBOutlet private var webView: WKWebView!
-    @IBOutlet private var progressView: UIProgressView!
     
     weak var delegate: WebViewViewControllerDelegate?
-    private let requestOMatic = RequestOMatic(clientID: Constants.accessKey)
+    private let requestOMatic: RequestOMatic
+    
+    private let webView: WKWebView
+    private let progressView: UIProgressView = .init()
+    
+    init(
+        requestOMatic: RequestOMatic = RequestOMatic(clientID: Constants.accessKey, accessToken: nil),
+        webView: WKWebView = NoStupidToolBarWebView(frame: .zero, configuration: WKWebViewConfiguration())
+    ) {
+        self.requestOMatic = requestOMatic
+        self.webView = webView
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        webView.navigationDelegate = self
+        setupUI()
         loadAuthView()
     }
     
@@ -55,8 +73,8 @@ extension WebViewViewController: WKNavigationDelegate {
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
         if let code = code(from: navigationAction) {
-            delegate?.webViewViewController(self, didAuthenticateWithCode: code)
             decisionHandler(.cancel)
+            delegate?.webViewViewController(didAuthenticateWithCode: code)
         } else {
             decisionHandler(.allow)
         }
@@ -74,5 +92,32 @@ extension WebViewViewController: WKNavigationDelegate {
         } else {
             return nil
         }
+    }
+}
+
+extension WebViewViewController {
+    private func setupUI() {
+        view.backgroundColor = .ypBlack
+        
+        webView.navigationDelegate = self
+        
+        progressView.progress = 0
+        progressView.progressTintColor = .systemBlue
+        
+        [webView, progressView].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
+        
+        NSLayoutConstraint.activate([
+            webView.topAnchor.constraint(equalTo: view.topAnchor),
+            webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            webView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            progressView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            progressView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            progressView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            ])
     }
 }
