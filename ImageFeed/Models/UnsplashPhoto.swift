@@ -3,33 +3,44 @@ import Foundation
 import UIKit
 
 public struct UnsplashPhoto: Decodable {
-    public enum URLKind: String, Codable {
-        case full
-        case regular
-        case small
+    
+    struct URLKind: Codable {
+        let full: String
+        let regular: String
+        let small: String
+        let thumb: String
     }
     
-    public enum LinkKind: String, Codable {
-        case own = "self"
-        case html
-        case download
-        case downloadLocation = "download_location"
+    struct LinkKind: Codable {
+        let own: String
+        let html: String
+        let download: String
+        let downloadLocation: String
+        
+        enum CodingKeys: String, CodingKey {
+            case own = "self"
+            case html
+            case download
+            case downloadLocation = "download_location"
+        }
     }
     
-    public let identifier: String
-    public let height: Int
-    public let width: Int
-    public let user: UnsplashUser
-    public let urls: [URLKind: URL]
-    public let links: [LinkKind: URL]
-    public let likesCount: Int
-    public let downloadsCount: Int?
-    public let viewsCount: Int?
+    let identifier: String
+    let height: Int
+    let width: Int
+    let createdAt: String?
+    let user: UnsplashUser
+    let urls: URLKind
+    let links: LinkKind
+    let likesCount: Int
+    let downloadsCount: Int?
+    let viewsCount: Int?
     
     private enum CodingKeys: String, CodingKey {
         case identifier = "id"
         case height
         case width
+        case createdAt = "created_at"
         case user
         case urls
         case links
@@ -38,4 +49,7 @@ public struct UnsplashPhoto: Decodable {
         case viewsCount = "views"
     }
     
+    var size: CGSize {
+        return CGSize(width: CGFloat(width), height: CGFloat(height))
+    }
 }

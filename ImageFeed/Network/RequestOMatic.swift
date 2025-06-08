@@ -1,10 +1,10 @@
 import Foundation
 
 final class RequestOMatic {
-    private let clientID: String //accessToken
-    private var accessToken: String? //secretToken
+    private let clientID: String
+    private var accessToken: String?
     
-    init(clientID: String, accessToken: String? = nil) {
+    init(clientID: String = Constants.accessKey, accessToken: String? = nil) {
         self.clientID = clientID
         self.accessToken = accessToken
     }

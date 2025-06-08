@@ -9,11 +9,9 @@ import UIKit
 
 final class RootCoordinator: Coordinator {
     var childCoordinators: [Coordinator] = []
-    private let oAuthService: OAuth2Service
     private let window: UIWindow
     
-    init(oAuth2Service: OAuth2Service = .shared, window: UIWindow) {
-        self.oAuthService = oAuth2Service
+    init(window: UIWindow) {
         self.window = window
     }
     
@@ -41,8 +39,10 @@ final class RootCoordinator: Coordinator {
     private func showSplash(with code: String?) {
         let splashVC = SplashVC()
         splashVC.delegate = self
-        splashVC.tryToLogin(with: code)
         window.rootViewController = splashVC
+        Task { @MainActor in
+            await splashVC.tryToLogin(with: code)
+        }
     }
 }
 
@@ -56,7 +56,6 @@ extension RootCoordinator: AuthCoordinatorDelegate {
 extension RootCoordinator: FeedCoordinatorDelegate {
     func feedCoordinatorDidLogout(_ coordinator: FeedCoordinatorProtocol) {
         childDidFinish(coordinator)
-        oAuthService.clearAccessToken()
         showSplash(with: nil)
     }
 }

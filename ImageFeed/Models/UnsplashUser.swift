@@ -1,32 +1,25 @@
 import Foundation
 
-public struct UnsplashUser: Codable {
-    public enum ProfileImageSize: String, Codable {
-        case small
-        case medium
-        case large
+struct UnsplashUser: Codable {
+    
+    struct ProfileImage: Codable {
+        let small: String?
+        let medium: String?
+        let large: String?
     }
     
-    public enum LinkKind: String, Codable {
-        case html
-        case photos
-        case likes
-        case portfolio
-    }
-    
-    public let identifier: String
-    public let username: String
-    public let firstName: String?
-    public let lastName: String?
-    public let name: String?
-    public let profileImage: [ProfileImageSize: URL]
-    public let bio: String?
-    public let links: [LinkKind: URL]
-    public let location: String?
-    public let portfolioURL: URL?
-    public let totalCollections: Int
-    public let totalLikes: Int
-    public let totalPhotos: Int
+    let identifier: String
+    let username: String
+    let firstName: String?
+    let lastName: String?
+    let name: String?
+    let profileImage: ProfileImage
+    let bio: String?
+    let location: String?
+    let portfolioURL: URL?
+    let totalCollections: Int
+    let totalLikes: Int
+    let totalPhotos: Int
     
     private enum CodingKeys: String, CodingKey {
             case identifier = "id"
@@ -36,7 +29,6 @@ public struct UnsplashUser: Codable {
             case name
             case profileImage = "profile_image"
             case bio
-            case links
             case location
             case portfolioURL = "portfolio_url"
             case totalCollections = "total_collections"

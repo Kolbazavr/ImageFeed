@@ -58,8 +58,8 @@ final class FeedCoordinator: FeedCoordinatorProtocol {
         imageListNavController.navigationBar.isHidden = true
         imageListNavController.tabBarItem = UITabBarItem(
             title: "",
-            image: UIImage(resource: .tabEditoralActive).withRenderingMode(.alwaysOriginal),
-            selectedImage: nil
+            image: UIImage(resource: .tabEditoralNoActive).withRenderingMode(.alwaysOriginal),
+            selectedImage: UIImage(resource: .tabEditoralActive).withRenderingMode(.alwaysOriginal)
         )
         return imageListNavController
     }
@@ -71,8 +71,8 @@ final class FeedCoordinator: FeedCoordinatorProtocol {
         profileNavController.navigationBar.isHidden = true
         profileNavController.tabBarItem = UITabBarItem(
             title: "",
-            image: UIImage(resource: .tabProfileActive).withRenderingMode(.alwaysOriginal),
-            selectedImage: nil
+            image: UIImage(resource: .tabProfileNoActive).withRenderingMode(.alwaysOriginal),
+            selectedImage: UIImage(resource: .tabProfileActive).withRenderingMode(.alwaysOriginal)
         )
         return profileNavController
     }

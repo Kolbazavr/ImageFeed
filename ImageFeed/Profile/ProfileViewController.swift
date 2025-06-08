@@ -1,10 +1,13 @@
 import UIKit
-//TODO: remove after test:
 import WebKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController, CoordinatedByFeedProtocol {
     
     weak var coordinator: FeedCoordinatorProtocol?
+    
+    private var profileImageServiceObserver: NSObjectProtocol?
+    private let profileService: ProfileService = .shared
     
     private let avatarImageView = UIImageView()
     private let nameLabel = UILabel()
@@ -15,6 +18,39 @@ final class ProfileViewController: UIViewController, CoordinatedByFeedProtocol {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        updateProfileDetails(profile: profileService.profile)
+        setupObserver()
+        updateAvatar(from: ProfileImageService.shared.avatarURL)
+    }
+    
+    private func setupObserver() {
+        profileImageServiceObserver = NotificationCenter.default
+            .addObserver(
+                forName: ProfileImageService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] notification in
+                guard let self = self else { return }
+                self.updateAvatar(from: notification)
+            }
+    }
+    
+    private func updateAvatar(from notification: Notification) {
+        let avatarURL = notification.userInfo?["URL"] as? URL
+        updateAvatar(from: avatarURL)
+    }
+    
+    private func updateAvatar(from url: URL?) {
+        guard let url else { return }
+        let processor = RoundCornerImageProcessor(cornerRadius: 35)
+        avatarImageView.kf.setImage(with: url, placeholder: UIImage(systemName: "ev.plug.dc.nacs.fill"), options: [.processor(processor)])
+    }
+    
+    private func updateProfileDetails(profile: UnsplashUser?) {
+        guard let profile else { return }
+        loginNameLabel.text = "@\(profile.username)"
+        nameLabel.text = profile.nameToDisplay
+        descriptionLabel.text = profile.bio
     }
     
     private func setupUI() {
@@ -80,6 +116,7 @@ final class ProfileViewController: UIViewController, CoordinatedByFeedProtocol {
         let websiteDataTypes = Set([WKWebsiteDataTypeCookies, WKWebsiteDataTypeLocalStorage])
             WKWebsiteDataStore.default().removeData(ofTypes: websiteDataTypes, modifiedSince: Date.distantPast, completionHandler: {})
         
+        OAuth2Service.shared.clearAccessToken()
         coordinator?.logout()
     }
 }

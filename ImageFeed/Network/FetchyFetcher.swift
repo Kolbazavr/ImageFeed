@@ -7,18 +7,13 @@
 
 import Foundation
 
-enum DecodingError: Error {
-    case failedToDecode
-    var localizedDescription: String { "Failed to decode" }
-}
-
 final class FetchyFetcher {
     private let requestOMatic: RequestOMatic
     private let decoder: JSONDecoder
     private let session: URLSession
     
-    init(clientId: String, accessToken: String? = nil) {
-        self.requestOMatic = .init(clientID: clientId, accessToken: accessToken)
+    init(accessToken: String? = nil) {
+        self.requestOMatic = .init(accessToken: accessToken)
         self.decoder = .init()
         self.session = .shared
     }
@@ -27,14 +22,18 @@ final class FetchyFetcher {
         let unsplashRequest = requestOMatic.request(for: requestType)
         let (data, response) = try await session.data(for: unsplashRequest)
         guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
+            print("Weird status code")
             throw NetworkError.httpStatusCode(-1)
         }
         guard 200..<300 ~= statusCode else {
+            print("Bad status code: \(statusCode)")
             throw NetworkError.httpStatusCode(statusCode)
         }
-        guard let decodedT = try? decoder.decode(T.self, from: data) else {
+        do {
+            return try decoder.decode(T.self, from: data)
+        } catch {
+            print("Decoding failed")
             throw DecodingError.failedToDecode
         }
-        return decodedT
     }
 }
