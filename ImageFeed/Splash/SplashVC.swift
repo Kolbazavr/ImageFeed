@@ -37,13 +37,21 @@ final class SplashVC: UIViewController {
     }
     
     func tryToLogin(with code: String?) async {
-        if let code {
-            await fetchOAuthToken(code)
-        } else {
-            let token = tokenStorage.accessToken
-            await fetchUserProfileStuff(token)
-            self.delegate?.splashDidCheckLogin(isLoggedIn: token != nil)
+        showLoadingIndicator()
+        do {
+            if let code {
+                try await fetchAndSaveOAuthToken(code)
+                try await fetchUserProfileStuff(tokenStorage.accessToken)
+                self.delegate?.splashDidCheckLogin(isLoggedIn: true)
+            } else {
+                try await fetchUserProfileStuff(tokenStorage.accessToken)
+                self.delegate?.splashDidCheckLogin(isLoggedIn: tokenStorage.accessToken != nil)
+            }
+        } catch {
+            print("Error: \(error.localizedDescription)")
+            showErrorAlert(error: error)
         }
+        hideLoadingIndicator()
     }
     
     private func fetchAndSaveOAuthToken(_ code: String) async throws {
@@ -52,29 +60,11 @@ final class SplashVC: UIViewController {
         tokenStorage.accessToken = token
     }
     
-    private func fetchOAuthToken(_ code: String) async {
-        showLoadingIndicator()
-        do {
-            try await fetchAndSaveOAuthToken(code)
-            await tryToLogin(with: nil)
-            hideLoadingIndicator()
-        } catch {
-            hideLoadingIndicator()
-            showErrorAlert(error: error)
-            print("Failed to fetch token: \(error)")
-        }
-    }
-    
-    private func fetchUserProfileStuff(_ token: String?) async {
+    private func fetchUserProfileStuff(_ token: String?) async throws {
         guard let token else { return } //no token? -> skip and go login
-        do {
-            try await profileService.fetchProfile(token: token)
-            let username = profileService.profile?.username
-            fetchProfileImageURL(username: username)
-        } catch {
-            showErrorAlert(error: error)
-            print("Failed to fetch profile: \(error)")
-        }
+        try await profileService.fetchProfile(token: token)
+        let username = profileService.profile?.username
+        fetchProfileImageURL(username: username)
     }
     
     private func fetchProfileImageURL(username: String?) {

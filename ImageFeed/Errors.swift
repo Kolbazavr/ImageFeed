@@ -7,21 +7,28 @@
 
 import Foundation
 
-enum NetworkError: Error {
+enum NetworkError: Error, LocalizedError {
     case httpStatusCode(Int)
     case urlRequestError(Error)
     case urlSessionError
+    var errorDescription: String? {
+        return switch self {
+        case .httpStatusCode(let code): "HTTP status code: \(code)"
+        case .urlRequestError(let error): "URL request error: \(error)"
+        case .urlSessionError: "URL session error"
+        }
+    }
 }
 
-enum DecodingError: Error {
+enum DecodingError: Error, LocalizedError {
     case failedToDecode
-    var localizedDescription: String { "Failed to decode" }
+    var errorDescription: String? { "Failed to decode" }
 }
 
-enum URLError: Error {
+enum URLError: Error, LocalizedError {
     case invalidURL
     case missingToken
-    var localizedDescription: String {
+    var errorDescription: String? {
         return switch self {
         case .invalidURL: "Total failure of URL creation"
         case .missingToken: "The token has left the building"
@@ -29,7 +36,7 @@ enum URLError: Error {
     }
 }
 
-enum ProfileError: Error {
+enum ProfileError: Error, LocalizedError {
     case invalidUserName
-    var localizedDescription: String { "Invalid username" }
+    var errorDescription: String? { "Invalid username" }
 }

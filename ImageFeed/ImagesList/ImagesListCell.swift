@@ -3,6 +3,7 @@ import Kingfisher
 
 final class ImagesListCell: UITableViewCell {
     static let reuseIdentifier = "ImagesListCell"
+    private let placeholderImage = UIImage(resource: .placeholder)
     
     let cellImage: ParallaxImageView = {
         let imageView = ParallaxImageView()
@@ -47,7 +48,8 @@ final class ImagesListCell: UITableViewCell {
     
     func loadPhoto(photo: UnsplashPhoto?, isLiked: Bool) throws {
         guard let photo, let url = URL(string: photo.urls.small) else {
-            cellImage.image = UIImage(systemName: "bandage")
+            cellImage.tintColor = .secondaryLabel
+            cellImage.image = UIImage(resource: .cellStub)
             print("Bad Photo URL")
             throw URLError.invalidURL
         }
@@ -62,7 +64,8 @@ final class ImagesListCell: UITableViewCell {
             case .success:
                 break
             case .failure:
-                self.cellImage.image = UIImage(systemName: "bandage")
+                self.cellImage.tintColor = .secondaryLabel
+                self.cellImage.image = UIImage(resource: .cellStub)
                 print("KF failed to download image")
             }
         }

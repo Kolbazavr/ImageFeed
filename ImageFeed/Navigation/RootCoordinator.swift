@@ -21,7 +21,6 @@ final class RootCoordinator: Coordinator {
     }
     
     private func showAuthFlow() {
-        print("Auth flow go!")
         let authCoordinator = AuthCoordinator(window: window)
         authCoordinator.coordinatorDelegate = self
         childCoordinators = [authCoordinator]
@@ -29,7 +28,6 @@ final class RootCoordinator: Coordinator {
     }
     
     private func showMainFlow() {
-        print("Main flow go!")
         let feedCoordinator = FeedCoordinator(window: window)
         feedCoordinator.coordinatorDelegate = self
         childCoordinators = [feedCoordinator]

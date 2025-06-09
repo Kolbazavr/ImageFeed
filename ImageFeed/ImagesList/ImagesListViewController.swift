@@ -13,6 +13,8 @@ final class ImagesListViewController: UIViewController, CoordinatedByFeedProtoco
     private var alreadyLoadedPages: Set<Int> = []
     private var photoIdentifiers: Set<String> = []
     private var loadingTask: Task<Void, Error>?
+    private var loadingError: Error?
+    private let distanceToBottomForLoadingMore: CGFloat = 200
     //----------------------------
     
     override func viewDidLoad() {
@@ -27,11 +29,17 @@ final class ImagesListViewController: UIViewController, CoordinatedByFeedProtoco
         }
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        loadingTask?.cancel()
+        loadingError = nil
+    }
+    
     //TODO: Temporary (update later):
     private func loadSomeImages() async throws {
         showLoadingIndicator()
         if let existingLoadingTask = loadingTask {
-            print("Request to load rejected: already in progress...")
+//            print("Request to load rejected: already in progress...")
             try await existingLoadingTask.value
         } else {
             let newLoadingTask = Task {
@@ -47,7 +55,7 @@ final class ImagesListViewController: UIViewController, CoordinatedByFeedProtoco
                 
                 let indexPath = (startIndex..<someUnsplashPhotos.count).map { IndexPath(row: $0, section: 0) }
                 
-                print("Loaded \(loadedPhotos.count) photos on page \(pageToLoad), added after dubplicates filtering: \(filteredPhotos.count). total loaded: \(someUnsplashPhotos.count)")
+//                print("Loaded \(loadedPhotos.count) photos on page \(pageToLoad), added after dubplicates filtering: \(filteredPhotos.count). total loaded: \(someUnsplashPhotos.count)")
                 
                 await MainActor.run {
                     tableView.performBatchUpdates { tableView.insertRows(at: indexPath, with: .automatic) }
@@ -95,10 +103,9 @@ extension ImagesListViewController: UITableViewDataSource {
 
 extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let cell = tableView.cellForRow(at: indexPath) as! ImagesListCell
-        if let image = cell.cellImage.image {
-            coordinator?.showSingleImage(image: image)
-        }
+        guard let cell = tableView.cellForRow(at: indexPath) as? ImagesListCell,
+              let image = cell.cellImage.image else { return }
+        coordinator?.showSingleImage(image: image)
     }
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -134,17 +141,40 @@ extension ImagesListViewController: UITableViewDelegate {
         let contentHeight = scrollView.contentSize.height
         let height = scrollView.frame.size.height
         
-        if offsetY >= (contentHeight - height - 200) {
+        if offsetY >= (contentHeight - height - distanceToBottomForLoadingMore) {
+            guard loadingError == nil else { return }
             guard loadingTask == nil else { return }
-            print("ScrollView did scroll to bottom. Asking to load more... Photos total count: \(someUnsplashPhotos.count)")
+//            print("ScrollView did scroll to bottom. Asking to load more... Photos total count: \(someUnsplashPhotos.count)")
             Task {
                 do {
                     try await loadSomeImages()
                 } catch {
-                    print("")
+                    hideLoadingIndicator()
+                    loadingError = error
+                    showErrorAlert(error: error)
+                    print("Error loading more photos: \(error.localizedDescription)")
                 }
             }
         }
+    }
+    
+    @MainActor
+    private func showErrorAlert(error: Error) {
+        let alert = UIAlertController(
+            title: "Что-то пошло не так",
+            message: error.localizedDescription,
+            preferredStyle: .alert
+        )
+        if !someUnsplashPhotos.isEmpty {
+            let cancelAction = UIAlertAction(title: "Ок", style: .cancel)
+            alert.addAction(cancelAction)
+        }
+        let exitAction = UIAlertAction(title: "Выйти", style: .destructive) { [weak self] _ in
+            self?.coordinator?.logout()
+        }
+        alert.addAction(exitAction)
+        
+        present(alert, animated: true)
     }
     
     private func setParallax(scrollView: UIScrollView) {

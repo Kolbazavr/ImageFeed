@@ -35,5 +35,6 @@ final class FetchyFetcher {
             print("Decoding failed")
             throw DecodingError.failedToDecode
         }
+//        throw NetworkError.httpStatusCode(123)
     }
 }

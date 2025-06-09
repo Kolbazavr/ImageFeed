@@ -17,17 +17,17 @@ final class ProfileService {
     private init() {}
     
     func fetchProfile(token: String) async throws {
-        if let existingTask = fetchingProfileTask {
+        guard fetchingProfileTask == nil else {
             print("Someone is already fetching profile")
-            try await existingTask.value
-        } else {
-            let newFetchingProfileTask = Task {
-                defer { self.fetchingProfileTask = nil }
-                let fetchyFetcher = FetchyFetcher(accessToken: token)
-                profile = try await fetchyFetcher.fetch(.userProfile)
-            }
-            fetchingProfileTask = newFetchingProfileTask
-            try await newFetchingProfileTask.value
+            try await fetchingProfileTask?.value
+            return
         }
+        let newFetchingProfileTask = Task {
+            defer { self.fetchingProfileTask = nil }
+            let fetchyFetcher = FetchyFetcher(accessToken: token)
+            profile = try await fetchyFetcher.fetch(.userProfile)
+        }
+        fetchingProfileTask = newFetchingProfileTask
+        try await newFetchingProfileTask.value
     }
 }
