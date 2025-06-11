@@ -48,15 +48,18 @@ final class SingleImageViewController: UIViewController {
         imageView.image = image
         imageView.frame.size = image.size
         fitImage()
-        centerImage()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        centerImage()
+    }
     
     @objc private func didTapBackButton() {
         dismiss(animated: true, completion: nil)
     }
     
-    @objc func didTapShareButton(_ sender: UIButton) {
+    @objc private func didTapShareButton(_ sender: UIButton) {
         guard let image else { return }
         let share = UIActivityViewController(
             activityItems: [image],

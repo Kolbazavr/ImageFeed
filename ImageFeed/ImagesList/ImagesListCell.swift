@@ -1,9 +1,11 @@
 import UIKit
+import Kingfisher
 
 final class ImagesListCell: UITableViewCell {
     static let reuseIdentifier = "ImagesListCell"
+    private let placeholderImage = UIImage(resource: .placeholder)
     
-    private let cellImage: ParallaxImageView = {
+    let cellImage: ParallaxImageView = {
         let imageView = ParallaxImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.layer.cornerRadius = 16
@@ -39,14 +41,43 @@ final class ImagesListCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        cellImage.kf.cancelDownloadTask()
+    }
+    
+    func loadPhoto(photo: UnsplashPhoto?, isLiked: Bool) throws {
+        guard let photo, let url = URL(string: photo.urls.small) else {
+            cellImage.tintColor = .secondaryLabel
+            cellImage.image = UIImage(resource: .cellStub)
+            print("Bad Photo URL")
+            throw URLError.invalidURL
+        }
+        
+        setPhotoDate(from: photo)
+        likeButton.isSelected = isLiked
+        
+        cellImage.kf.indicatorType = .activity
+        cellImage.kf.setImage(with: url, placeholder: UIImage(), options: [.transition(.flipFromLeft(0.3))]) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .success:
+                break
+            case .failure:
+                self.cellImage.tintColor = .secondaryLabel
+                self.cellImage.image = UIImage(resource: .cellStub)
+                print("KF failed to download image")
+            }
+        }
+    }
+    
     func parallax(offset: CGFloat) {
         cellImage.parallaxEffect(offset: offset)
     }
     
-    func configure(with image: UIImage, date: String, isLiked: Bool) {
-        cellImage.image = image
-        dateLabel.text = date
-        likeButton.isSelected = isLiked
+    private func setPhotoDate(from photo: UnsplashPhoto) {
+        guard let date = ISO8601DateFormatter().date(from: photo.createdAt ?? "") else { return }
+        dateLabel.text = DateFormatter.defaultDateTime.string(from: date)
     }
     
     private func setupCell() {
@@ -78,6 +109,5 @@ final class ImagesListCell: UITableViewCell {
     
     @objc private func likeButtonTapped() {
         likeButton.isSelected.toggle()
-        //how the fuck to mark it as liked?
     }
 }

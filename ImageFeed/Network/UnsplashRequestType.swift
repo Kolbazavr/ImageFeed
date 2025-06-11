@@ -11,9 +11,10 @@ enum UnsplashRequestType {
 //    case search(query: String)
     case login
     case accessToken(code: String) //or Bearer Token?
-    case userProfile(profile: UnsplashUser)
-    case userProfileAvatar(username: String)
+    case userProfile
+    case publicProfile(username: String)
     case randomPhotos(count: Int)
+    case photoPage(page: Int, perPage: Int)
     //add like photo?
     
     var baseURL: URL? {
@@ -28,8 +29,9 @@ enum UnsplashRequestType {
         case .login: "/oauth/authorize"
         case .accessToken: "/oauth/token"
         case .userProfile: "/me"
-        case .userProfileAvatar(let username): "/users/\(username)"
+        case .publicProfile(let username): "/users/\(username)"
         case .randomPhotos: "/photos/random"
+        case .photoPage: "/photos"
         }
     }
     
@@ -62,6 +64,12 @@ enum UnsplashRequestType {
         case .randomPhotos(let count):
             [
                 "count": "\(count)"
+            ]
+                .compactMap { URLQueryItem(name: $0, value: $1) }
+        case .photoPage(let page, let perPage):
+            [
+                "page": "\(page)",
+                "per_page": "\(perPage)"
             ]
                 .compactMap { URLQueryItem(name: $0, value: $1) }
         default: nil
