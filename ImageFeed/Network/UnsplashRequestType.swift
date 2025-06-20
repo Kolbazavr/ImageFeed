@@ -10,12 +10,13 @@ import Foundation
 enum UnsplashRequestType {
 //    case search(query: String)
     case login
-    case accessToken(code: String) //or Bearer Token?
+    case accessToken(code: String)
     case userProfile
     case publicProfile(username: String)
     case randomPhotos(count: Int)
     case photoPage(page: Int, perPage: Int)
-    //add like photo?
+    case likeAction(identifier: String, isLiked: Bool)
+    
     
     var baseURL: URL? {
         return switch self {
@@ -32,12 +33,14 @@ enum UnsplashRequestType {
         case .publicProfile(let username): "/users/\(username)"
         case .randomPhotos: "/photos/random"
         case .photoPage: "/photos"
+        case .likeAction(identifier: let photoID, isLiked: _): "photos/\(photoID)/like"
         }
     }
     
     var method: String {
         return switch self {
         case .accessToken: "POST"
+        case .likeAction(identifier: _, isLiked: let isLiked): isLiked ? "POST" : "DELETE"
         default: "GET"
         }
     }

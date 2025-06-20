@@ -47,24 +47,31 @@ final class ImagesListViewController: UIViewController, CoordinatedByFeedProtoco
                 let pageToLoad = (alreadyLoadedPages.max() ?? 0) + 1
                 let loadedPhotos: [UnsplashPhoto] = try await fetchyFetcher.fetch(.photoPage(page: pageToLoad, perPage: 10))
                 let filteredPhotos: [UnsplashPhoto] = loadedPhotos.filter { !photoIdentifiers.contains($0.identifier) }
-                photoIdentifiers.formUnion(filteredPhotos.map { $0.identifier })
                 
-                let startIndex = someUnsplashPhotos.count
-                someUnsplashPhotos.append(contentsOf: filteredPhotos)
-                alreadyLoadedPages.insert(pageToLoad)
-                
-                let indexPath = (startIndex..<someUnsplashPhotos.count).map { IndexPath(row: $0, section: 0) }
-                
-//                print("Loaded \(loadedPhotos.count) photos on page \(pageToLoad), added after dubplicates filtering: \(filteredPhotos.count). total loaded: \(someUnsplashPhotos.count)")
-                
-                await MainActor.run {
-                    tableView.performBatchUpdates { tableView.insertRows(at: indexPath, with: .automatic) }
-                }
-                hideLoadingIndicator()
+                insertLoadedPhotos(filteredPhotos, forPage: pageToLoad)
             }
             loadingTask = newLoadingTask
             try await newLoadingTask.value
         }
+    }
+    
+    @MainActor
+    private func insertLoadedPhotos(_ photos: [UnsplashPhoto], forPage page: Int) {
+        photoIdentifiers.formUnion(photos.map { $0.identifier })
+
+        let startIndex = someUnsplashPhotos.count
+        someUnsplashPhotos.append(contentsOf: photos)
+        alreadyLoadedPages.insert(page)
+
+        let indexPaths = (startIndex..<someUnsplashPhotos.count).map { IndexPath(row: $0, section: 0) }
+        
+        //                print("Loaded \(loadedPhotos.count) photos on page \(pageToLoad), added after dubplicates filtering: \(filteredPhotos.count). total loaded: \(someUnsplashPhotos.count)")
+
+        tableView.performBatchUpdates {
+            tableView.insertRows(at: indexPaths, with: .automatic)
+        }
+
+        hideLoadingIndicator()
     }
     
     @MainActor
