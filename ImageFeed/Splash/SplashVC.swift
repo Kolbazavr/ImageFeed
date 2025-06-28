@@ -48,8 +48,11 @@ final class SplashVC: UIViewController {
                 self.delegate?.splashDidCheckLogin(isLoggedIn: tokenStorage.accessToken != nil)
             }
         } catch {
+            hideLoadingIndicator()
             print("Error: \(error.localizedDescription)")
-            showErrorAlert(error: error)
+            if await showConfirmationAlert(title: "Что-то пошло не так(", message: "Не удалось войти в систему") {
+                delegate?.splashDidCheckLogin(isLoggedIn: false)
+            }
         }
         hideLoadingIndicator()
     }
@@ -78,7 +81,6 @@ final class SplashVC: UIViewController {
         }
     }
     
-    //Blocking splash icon so it is totally safe from taps
     @MainActor
     private func showLoadingIndicator() {
         UIBlockingProgressHUD.show()
@@ -87,20 +89,6 @@ final class SplashVC: UIViewController {
     @MainActor
     private func hideLoadingIndicator() {
         UIBlockingProgressHUD.hide()
-    }
-    
-    @MainActor
-    private func showErrorAlert(error: Error) {
-        let alert = UIAlertController(
-            title: "Что-то пошло не так",
-            message: "Не удалось войти в систему",
-            preferredStyle: .alert
-        )
-        let action = UIAlertAction(title: "Ок", style: .default) { [weak self] _ in
-            self?.delegate?.splashDidCheckLogin(isLoggedIn: false)
-        }
-        alert.addAction(action)
-        present(alert, animated: true)
     }
     
     private func setupUI() {

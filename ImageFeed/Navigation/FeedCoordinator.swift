@@ -38,9 +38,8 @@ final class FeedCoordinator: FeedCoordinatorProtocol {
         window.rootViewController = tabBarController
     }
     
-    func showSingleImage(image: UIImage) {
-        let singleImageVC = SingleImageViewController()
-        singleImageVC.image = image
+    func showSingleImage(image: UIImage, fullSizeUrlString: String) {
+        let singleImageVC = SingleImageViewController(largeImageURL: fullSizeUrlString, image: image)
         let navigationController = UINavigationController(rootViewController: singleImageVC)
         navigationController.modalPresentationStyle = .fullScreen
         navigationController.modalTransitionStyle = .flipHorizontal

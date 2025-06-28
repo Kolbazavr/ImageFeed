@@ -30,7 +30,7 @@ protocol CoordinatedByAuthProtocol {
 }
 
 protocol FeedCoordinatorProtocol: Coordinator {
-    func showSingleImage(image: UIImage)
+    func showSingleImage(image: UIImage, fullSizeUrlString: String)
     func logout()
 }
 

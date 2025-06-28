@@ -8,7 +8,6 @@
 import Foundation
 
 enum UnsplashRequestType {
-//    case search(query: String)
     case login
     case accessToken(code: String)
     case userProfile
@@ -33,7 +32,7 @@ enum UnsplashRequestType {
         case .publicProfile(let username): "/users/\(username)"
         case .randomPhotos: "/photos/random"
         case .photoPage: "/photos"
-        case .likeAction(identifier: let photoID, isLiked: _): "photos/\(photoID)/like"
+        case .likeAction(identifier: let photoID, isLiked: _): "/photos/\(photoID)/like"
         }
     }
     

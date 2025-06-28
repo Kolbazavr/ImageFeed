@@ -4,74 +4,60 @@ import ProgressHUD
 final class ImagesListViewController: UIViewController, CoordinatedByFeedProtocol {
     
     weak var coordinator: FeedCoordinatorProtocol?
-    
-    private let tableView: UITableView = .init()
-    
-    //TODO: Temporary (update later):
-    private let fetchyFetcher: FetchyFetcher = .init(accessToken: OAuth2TokenStorage.shared.accessToken)
-    private var someUnsplashPhotos: [UnsplashPhoto] = []
-    private var alreadyLoadedPages: Set<Int> = []
-    private var photoIdentifiers: Set<String> = []
-    private var loadingTask: Task<Void, Error>?
+    private var photos: [Photo] = []
+    private var serviceObserver: NSObjectProtocol?
     private var loadingError: Error?
-    private let distanceToBottomForLoadingMore: CGFloat = 200
-    //----------------------------
+    private let imagesListService: ImagesListService = .init()
+    private let tableView: UITableView = .init()
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTableView()
+        setupObserver()
+        loadSomeImages()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        imagesListService.cancelPendingFetchPhotos()
+        loadingError = nil
+    }
+    
+    private func loadSomeImages() {
+        showLoadingIndicator()
         Task {
             do {
-                try await loadSomeImages()
+                try await imagesListService.fetchPhotosNextPage()
             } catch {
+                //show alert?
                 print("Failed to load images: \(error)")
             }
         }
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        loadingTask?.cancel()
-        loadingError = nil
-    }
-    
-    //TODO: Temporary (update later):
-    private func loadSomeImages() async throws {
-        showLoadingIndicator()
-        if let existingLoadingTask = loadingTask {
-//            print("Request to load rejected: already in progress...")
-            try await existingLoadingTask.value
-        } else {
-            let newLoadingTask = Task {
-                defer { self.loadingTask = nil }
-                let pageToLoad = (alreadyLoadedPages.max() ?? 0) + 1
-                let loadedPhotos: [UnsplashPhoto] = try await fetchyFetcher.fetch(.photoPage(page: pageToLoad, perPage: 10))
-                let filteredPhotos: [UnsplashPhoto] = loadedPhotos.filter { !photoIdentifiers.contains($0.identifier) }
-                
-                insertLoadedPhotos(filteredPhotos, forPage: pageToLoad)
-            }
-            loadingTask = newLoadingTask
-            try await newLoadingTask.value
-        }
-    }
-    
-    @MainActor
-    private func insertLoadedPhotos(_ photos: [UnsplashPhoto], forPage page: Int) {
-        photoIdentifiers.formUnion(photos.map { $0.identifier })
-
-        let startIndex = someUnsplashPhotos.count
-        someUnsplashPhotos.append(contentsOf: photos)
-        alreadyLoadedPages.insert(page)
-
-        let indexPaths = (startIndex..<someUnsplashPhotos.count).map { IndexPath(row: $0, section: 0) }
+    private func updateTableViewAnimated() {
+        let oldCount = photos.count
+        let newCount = imagesListService.photos.count
         
-        //                print("Loaded \(loadedPhotos.count) photos on page \(pageToLoad), added after dubplicates filtering: \(filteredPhotos.count). total loaded: \(someUnsplashPhotos.count)")
-
-        tableView.performBatchUpdates {
-            tableView.insertRows(at: indexPaths, with: .automatic)
+        photos = imagesListService.photos
+        if oldCount != newCount {
+            tableView.performBatchUpdates {
+                let indexPaths = (oldCount..<newCount).map { IndexPath(row: $0, section: 0) }
+                tableView.insertRows(at: indexPaths, with: .automatic)
+            }
+            hideLoadingIndicator()
         }
-
-        hideLoadingIndicator()
+    }
+    
+    private func setupObserver() {
+        serviceObserver = NotificationCenter.default.addObserver(
+            forName: ImagesListService.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.updateTableViewAnimated()
+        }
     }
     
     @MainActor
@@ -83,12 +69,11 @@ final class ImagesListViewController: UIViewController, CoordinatedByFeedProtoco
     private func hideLoadingIndicator() {
         ProgressHUD.dismiss()
     }
-    //----------------------------
 }
 
 extension ImagesListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        someUnsplashPhotos.count
+        photos.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -99,10 +84,12 @@ extension ImagesListViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         
+        imageListCell.delegate = self
+        
         do {
-            try imageListCell.loadPhoto(photo: someUnsplashPhotos[indexPath.row], isLiked: indexPath.row % 2 == 0)
+            try imageListCell.loadPhoto(photo: imagesListService.photos[indexPath.row])
         } catch {
-            print("Problem with cell config at row \(indexPath.row): \(error)")
+            print("Problem with cell config at row \(indexPath.row): \(error.localizedDescription)")
         }
         return imageListCell
     }
@@ -110,17 +97,17 @@ extension ImagesListViewController: UITableViewDataSource {
 
 extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let cell = tableView.cellForRow(at: indexPath) as? ImagesListCell,
+        guard let cell = tableView.cellForRow(at: indexPath) as? ImagesListCell, cell.isLoadedPhoto == true,
               let image = cell.cellImage.image else { return }
-        coordinator?.showSingleImage(image: image)
+        coordinator?.showSingleImage(image: image, fullSizeUrlString: photos[indexPath.row].largeImageURL)
     }
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        guard someUnsplashPhotos.indices.contains(indexPath.row) else {
-            print("Index out of bounds: tableView row \(indexPath.row), total photos count \(someUnsplashPhotos.count)")
+        guard photos.indices.contains(indexPath.row) else {
+            print("Index out of bounds: tableView row \(indexPath.row), total photos count \(photos.count)")
             return UITableView.automaticDimension
         }
-        let image = someUnsplashPhotos[indexPath.row]
+        let image = photos[indexPath.row]
         
         let imageInsets = UIEdgeInsets(top: 4, left: 16, bottom: 4, right: 16)
         let imageViewWidth = tableView.bounds.width - imageInsets.left - imageInsets.right
@@ -139,29 +126,33 @@ extension ImagesListViewController: UITableViewDelegate {
         let relativeOffsetY = (cellCenter.y - scrollCenter) / maxOffset
         
         cell.parallax(offset: relativeOffsetY)
+        
+        if indexPath.row == photos.count - 1 {
+            Task {
+                do {
+                    try await imagesListService.fetchPhotosNextPage()
+                } catch {
+                    hideLoadingIndicator()
+                    loadingError = error
+//                    showErrorAlert(error: error)
+                    print("Error loading more photos: \(error.localizedDescription)")
+                    await showAlert(error: error)
+                }
+            }
+        }
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         setParallax(scrollView: scrollView)
-        
-        let offsetY = scrollView.contentOffset.y
-        let contentHeight = scrollView.contentSize.height
-        let height = scrollView.frame.size.height
-        
-        if offsetY >= (contentHeight - height - distanceToBottomForLoadingMore) {
-            guard loadingError == nil else { return }
-            guard loadingTask == nil else { return }
-//            print("ScrollView did scroll to bottom. Asking to load more... Photos total count: \(someUnsplashPhotos.count)")
-            Task {
-                do {
-                    try await loadSomeImages()
-                } catch {
-                    hideLoadingIndicator()
-                    loadingError = error
-                    showErrorAlert(error: error)
-                    print("Error loading more photos: \(error.localizedDescription)")
-                }
-            }
+    }
+    
+    func showAlert(error: Error) async {
+        if await showConfirmationAlert(
+            title: "Что-то пошло не так",
+            message: error.localizedDescription,
+            cancelText: photos.isEmpty ? nil : "Ок",
+            confirmActionText: "Выйти") {
+            coordinator?.logout()
         }
     }
     
@@ -172,7 +163,7 @@ extension ImagesListViewController: UITableViewDelegate {
             message: error.localizedDescription,
             preferredStyle: .alert
         )
-        if !someUnsplashPhotos.isEmpty {
+        if !photos.isEmpty {
             let cancelAction = UIAlertAction(title: "Ок", style: .cancel)
             alert.addAction(cancelAction)
         }
@@ -192,6 +183,24 @@ extension ImagesListViewController: UITableViewDelegate {
             let maxOffset = view.bounds.height
             let relativeOffsetY = (cellCenter.y - scrollCenter) / maxOffset
             cell.parallax(offset: relativeOffsetY)
+        }
+    }
+}
+
+extension ImagesListViewController: ImagesListCellDelegate {
+    func imageListCellDidTapLike(_ cell: ImagesListCell) {
+        guard let indexPath = tableView.indexPath(for: cell) else { return }
+        let photo = photos[indexPath.row]
+        Task {
+            do {
+                cell.lockLikeButton(true)
+                cell.setIsLiked(to: !photo.isLiked)
+                try await imagesListService.changeLikedState(ofPhotoWithId: photo.id, to: !photo.isLiked)
+            } catch {
+                cell.setIsLiked(to: photo.isLiked)
+                print("Like error: \(error.localizedDescription)")
+            }
+            cell.lockLikeButton(false)
         }
     }
 }

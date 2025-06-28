@@ -56,16 +56,18 @@ final class ProfileViewController: UIViewController, CoordinatedByFeedProtocol {
     private func setupUI() {
         view.backgroundColor = .ypBlack
         avatarImageView.image = UIImage(resource: .avatar)
+        avatarImageView.layer.cornerRadius = 35
+        avatarImageView.layer.masksToBounds = true
         
-        nameLabel.text = "Екатерина Новикова"
+        nameLabel.text = ""
         nameLabel.textColor = .ypWhite
         nameLabel.font = .systemFont(ofSize: 23, weight: .bold)
         
-        loginNameLabel.text = "@ekaterinanovikova"
+        loginNameLabel.text = ""
         loginNameLabel.textColor = .ypGray
         loginNameLabel.font = .systemFont(ofSize: 13, weight: .regular)
         
-        descriptionLabel.text = "Hello, world!"
+        descriptionLabel.text = ""
         descriptionLabel.textColor = .ypWhite
         descriptionLabel.font = .systemFont(ofSize: 13, weight: .regular)
         
@@ -104,19 +106,21 @@ final class ProfileViewController: UIViewController, CoordinatedByFeedProtocol {
     }
     
     @objc private func didTapLogoutButton() {
-        print("Logging out...")
+        Task {
+            if await showConfirmationAlert(title: "Пока, пока!", message: "Уверены, что хотите выйти?", cancelText: "Нет", confirmActionText: "Да") {
+                assert(Thread.isMainThread)
+                UIBlockingProgressHUD.show()
+                let cookieStore = WKWebsiteDataStore.default().httpCookieStore
+                let cookies = await cookieStore.allCookies()
+                for cookie in cookies { await cookieStore.deleteCookie(cookie) }
 
-        let cookieStore = WKWebsiteDataStore.default().httpCookieStore
-        cookieStore.getAllCookies { cookies in
-            for cookie in cookies {
-                cookieStore.delete(cookie)
+                let websiteDataTypes = Set([WKWebsiteDataTypeCookies, WKWebsiteDataTypeLocalStorage])
+                await WKWebsiteDataStore.default().removeData(ofTypes: websiteDataTypes, modifiedSince: Date.distantPast)
+                
+                OAuth2Service.shared.clearAccessToken()
+                UIBlockingProgressHUD.hide()
+                coordinator?.logout()
             }
         }
-        
-        let websiteDataTypes = Set([WKWebsiteDataTypeCookies, WKWebsiteDataTypeLocalStorage])
-            WKWebsiteDataStore.default().removeData(ofTypes: websiteDataTypes, modifiedSince: Date.distantPast, completionHandler: {})
-        
-        OAuth2Service.shared.clearAccessToken()
-        coordinator?.logout()
     }
 }

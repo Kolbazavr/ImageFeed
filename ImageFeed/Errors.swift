@@ -40,3 +40,8 @@ enum ProfileError: Error, LocalizedError {
     case invalidUserName
     var errorDescription: String? { "Invalid username" }
 }
+
+enum LikeError: Error, LocalizedError {
+    case invalidPhotoID
+    var errorDescription: String? { "Error with returned photo ID" }
+}

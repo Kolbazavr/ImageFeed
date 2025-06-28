@@ -1,13 +1,19 @@
 import UIKit
+import ProgressHUD
 
 final class SingleImageViewController: UIViewController {
-    var image: UIImage? {
-        didSet {
-            guard isViewLoaded, let image else { return }
-            imageView.image = image
-            imageView.frame.size = image.size
-            fitImage()
-        }
+    
+    let largeImageURL: String
+    let image: UIImage
+    
+    init(largeImageURL: String, image: UIImage) {
+        self.largeImageURL = largeImageURL
+        self.image = image
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     private let scrollView: UIScrollView = {
@@ -43,11 +49,19 @@ final class SingleImageViewController: UIViewController {
         super.viewDidLoad()
         scrollView.delegate = self
         setupUI()
-        
-        guard let image else { return }
         imageView.image = image
         imageView.frame.size = image.size
         fitImage()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        downloadFullSize()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        hideLoadingIndicator()
     }
     
     override func viewDidLayoutSubviews() {
@@ -60,12 +74,51 @@ final class SingleImageViewController: UIViewController {
     }
     
     @objc private func didTapShareButton(_ sender: UIButton) {
-        guard let image else { return }
         let share = UIActivityViewController(
             activityItems: [image],
             applicationActivities: nil
         )
         present(share, animated: true, completion: nil)
+    }
+    
+    private func downloadFullSize() {
+        showLoadingIndicator()
+        guard let largeImageURL = URL(string: largeImageURL) else { return }
+        imageView.kf.setImage(with: largeImageURL, placeholder: image) { [weak self] result in
+            guard let self else { return }
+            self.hideLoadingIndicator()
+            switch result {
+            case .success:
+                break
+            case .failure:
+                print(#function, "Failed to download full size image for \(largeImageURL)")
+                showError()
+            }
+        }
+    }
+    
+    @MainActor
+    private func showLoadingIndicator() {
+        ProgressHUD.animate()
+    }
+    
+    @MainActor
+    private func hideLoadingIndicator() {
+        ProgressHUD.dismiss()
+    }
+    
+    @MainActor
+    private func showError() {
+        let alertController = UIAlertController(
+            title: "Что-то пошло не так",
+            message: "Попробовать ещё раз?",
+            preferredStyle: .alert
+        )
+        alertController.addAction(UIAlertAction(title: "Не надо", style: .default))
+        alertController.addAction(UIAlertAction(title: "Повторить", style: .default, handler: { _ in
+            self.downloadFullSize()
+        }))
+        present(alertController, animated: true)
     }
     
     private func fitImage() {
