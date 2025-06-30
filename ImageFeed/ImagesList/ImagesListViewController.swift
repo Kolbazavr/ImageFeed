@@ -1,5 +1,4 @@
 import UIKit
-import ProgressHUD
 
 final class ImagesListViewController: UIViewController, CoordinatedByFeedProtocol {
     
@@ -9,6 +8,7 @@ final class ImagesListViewController: UIViewController, CoordinatedByFeedProtoco
     private var loadingError: Error?
     private let imagesListService: ImagesListService = .init()
     private let tableView: UITableView = .init()
+    private let loadingIndicator: SomeLoadingIndicator = .shared
 
     
     override func viewDidLoad() {
@@ -30,7 +30,6 @@ final class ImagesListViewController: UIViewController, CoordinatedByFeedProtoco
             do {
                 try await imagesListService.fetchPhotosNextPage()
             } catch {
-                //show alert?
                 print("Failed to load images: \(error)")
             }
         }
@@ -62,12 +61,12 @@ final class ImagesListViewController: UIViewController, CoordinatedByFeedProtoco
     
     @MainActor
     private func showLoadingIndicator() {
-        ProgressHUD.animate()
+        loadingIndicator.show()
     }
     
     @MainActor
     private func hideLoadingIndicator() {
-        ProgressHUD.dismiss()
+        loadingIndicator.hide()
     }
 }
 
@@ -134,7 +133,6 @@ extension ImagesListViewController: UITableViewDelegate {
                 } catch {
                     hideLoadingIndicator()
                     loadingError = error
-//                    showErrorAlert(error: error)
                     print("Error loading more photos: \(error.localizedDescription)")
                     await showAlert(error: error)
                 }
@@ -191,29 +189,26 @@ extension ImagesListViewController: ImagesListCellDelegate {
     func imageListCellDidTapLike(_ cell: ImagesListCell) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         let photo = photos[indexPath.row]
-        Task {
+        Task { @MainActor in
+            UIBlockingProgressHUD.show()
+            cell.lockLikeButton(true)
+            defer {
+                UIBlockingProgressHUD.hide()
+                cell.lockLikeButton(false)
+            }
             do {
-                cell.lockLikeButton(true)
                 cell.setIsLiked(to: !photo.isLiked)
                 try await imagesListService.changeLikedState(ofPhotoWithId: photo.id, to: !photo.isLiked)
             } catch {
                 cell.setIsLiked(to: photo.isLiked)
                 print("Like error: \(error.localizedDescription)")
             }
-            cell.lockLikeButton(false)
         }
     }
 }
 
 extension ImagesListViewController {
-    func setupTableView() {
-        ProgressHUD.animationType = .pacmanProgress
-        ProgressHUD.colorHUD = .clear
-        ProgressHUD.colorBackground = .ypBlack
-        ProgressHUD.colorProgress = .ypBlack
-        ProgressHUD.colorStatus = .ypBlack
-        ProgressHUD.colorAnimation = .ypBlack
-        
+    func setupTableView() {        
         tableView.backgroundColor = .ypBlack
         tableView.delegate = self
         tableView.dataSource = self

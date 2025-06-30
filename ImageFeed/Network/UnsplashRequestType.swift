@@ -1,10 +1,3 @@
-//
-//  UnsplashRequestType.swift
-//  ImageFeed
-//
-//  Created by ANTON ZVERKOV on 05.06.2025.
-//
-
 import Foundation
 
 enum UnsplashRequestType {

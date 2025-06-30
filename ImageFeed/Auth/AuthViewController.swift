@@ -1,5 +1,4 @@
 import UIKit
-import ProgressHUD
 
 final class AuthViewController: UIViewController, CoordinatedByAuthProtocol {
     

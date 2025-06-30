@@ -61,6 +61,9 @@ final class ImagesListCell: UITableViewCell {
         
         if let createdAt = photo.createdAt {
             dateLabel.text = DateFormatter.defaultDateTime.string(from: createdAt)
+        } else {
+            dateLabel.text = ""
+            print("Photo has no date")
         }
         
         likeButton.isSelected = photo.isLiked

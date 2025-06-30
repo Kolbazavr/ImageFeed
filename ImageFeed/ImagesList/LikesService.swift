@@ -2,7 +2,11 @@ import Foundation
 
 actor LikesService {
     private var pendingLikeRequests: [String : Task<LikeResponse, Error>] = [:]
-    private let fetchyFetcher: FetchyFetcher = .init(accessToken: OAuth2TokenStorage.shared.accessToken)
+    private let fetchyFetcher: ImageFeedFetcher
+    
+    init(fetcher: ImageFeedFetcher = FetchyFetcher(accessToken: OAuth2TokenStorage.shared.accessToken)) {
+        self.fetchyFetcher = fetcher
+    }
     
     func changeLike(for photoId: String, to isLiked: Bool) async throws -> LikeResponse {
         if let existingTask = pendingLikeRequests[photoId] {

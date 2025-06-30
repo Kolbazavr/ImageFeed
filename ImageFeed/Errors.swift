@@ -1,10 +1,3 @@
-//
-//  Errors.swift
-//  ImageFeed
-//
-//  Created by ANTON ZVERKOV on 08.06.2025.
-//
-
 import Foundation
 
 enum NetworkError: Error, LocalizedError {

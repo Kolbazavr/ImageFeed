@@ -1,10 +1,10 @@
 import UIKit
-import ProgressHUD
 
 final class SingleImageViewController: UIViewController {
     
     let largeImageURL: String
     let image: UIImage
+    let loadingIndicator: SomeLoadingIndicator = .shared
     
     init(largeImageURL: String, image: UIImage) {
         self.largeImageURL = largeImageURL
@@ -99,12 +99,12 @@ final class SingleImageViewController: UIViewController {
     
     @MainActor
     private func showLoadingIndicator() {
-        ProgressHUD.animate()
+        loadingIndicator.show()
     }
     
     @MainActor
     private func hideLoadingIndicator() {
-        ProgressHUD.dismiss()
+        loadingIndicator.hide()
     }
     
     @MainActor

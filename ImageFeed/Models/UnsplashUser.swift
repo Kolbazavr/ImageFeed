@@ -12,7 +12,6 @@ struct UnsplashUser: Codable {
     let username: String
     let firstName: String?
     let lastName: String?
-    let name: String?
     let profileImage: ProfileImage
     let bio: String?
     let location: String?
@@ -26,7 +25,6 @@ struct UnsplashUser: Codable {
             case username
             case firstName = "first_name"
             case lastName = "last_name"
-            case name
             case profileImage = "profile_image"
             case bio
             case location
@@ -37,10 +35,9 @@ struct UnsplashUser: Codable {
         }
     
     var nameToDisplay: String {
-        return switch (name, firstName, lastName) {
-        case (.some(let name), .none, .none): name
-        case (.none, .some(let firstName), .some(let lastName)): "\(firstName) \(lastName)"
-        case (.none, .some(let firstName), .none): "\(firstName)"
+        return switch (firstName, lastName) {
+        case (.some(let firstName), .some(let lastName)): "\(firstName) \(lastName)"
+        case (.some(let firstName), .none): "\(firstName)"
         default: username
         }
     }

@@ -1,10 +1,3 @@
-//
-//  Photo.swift
-//  ImageFeed
-//
-//  Created by ANTON ZVERKOV on 25.06.2025.
-//
-
 import Foundation
 
 struct Photo {

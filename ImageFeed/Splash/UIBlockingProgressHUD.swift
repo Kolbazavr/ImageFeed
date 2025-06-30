@@ -1,10 +1,3 @@
-//
-//  UIBlockingProgressHUD.swift
-//  ImageFeed
-//
-//  Created by ANTON ZVERKOV on 06.06.2025.
-//
-
 import UIKit
 import ProgressHUD
 
@@ -18,7 +11,7 @@ final class UIBlockingProgressHUD {
         guard let window = window else { return }
         
         window.isUserInteractionEnabled = false
-        ProgressHUD.animationType = .pacmanProgress
+//        ProgressHUD.animationType = .pacmanProgress
         ProgressHUD.colorHUD = .clear
         ProgressHUD.colorBackground = .ypBlack
         ProgressHUD.colorProgress = .ypBlack

@@ -11,7 +11,11 @@ final class ImagesListService {
     private let fetchCount = 10
     
     private let likeService: LikesService = .init()
-    private let fetchyFetcher: FetchyFetcher = .init(accessToken: OAuth2TokenStorage.shared.accessToken)
+    private let fetchyFetcher: ImageFeedFetcher
+    
+    init(fetcher: ImageFeedFetcher = FetchyFetcher(accessToken: OAuth2TokenStorage.shared.accessToken)) {
+        self.fetchyFetcher = fetcher
+    }
     
     func fetchPhotosNextPage() async throws {
         if let existingLoadingTask = loadingTask {
@@ -48,15 +52,12 @@ final class ImagesListService {
         }
         let newPhoto = Photo(photoResult: likeResponse.photo)
         
-        await MainActor.run { self.photos[index] = newPhoto }
+        await MainActor.run {
+            self.photos[index] = newPhoto
+            NotificationCenter.default.post(name: ImagesListService.didChangeNotification, object: self)
+        }
+        
     }
-    
-//    func cancelPendingLikes() {
-//        likingTasksQueue.sync {
-//            self.likingTasks.forEach { $1.cancel() }
-//            self.likingTasks.removeAll()
-//        }
-//    }
     
     @MainActor
     private func insertLoadedPhotos(_ newPhotos: [Photo], forPage page: Int) {

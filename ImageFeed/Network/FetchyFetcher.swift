@@ -1,13 +1,6 @@
-//
-//  FetchyFetcher.swift
-//  ImageFeed
-//
-//  Created by ANTON ZVERKOV on 05.06.2025.
-//
-
 import Foundation
 
-final class FetchyFetcher {
+final class FetchyFetcher: ImageFeedFetcher {
     private let requestOMatic: RequestOMatic
     private let decoder: JSONDecoder
     private let session: URLSession
@@ -35,6 +28,5 @@ final class FetchyFetcher {
             print("Decoding failed")
             throw DecodingError.failedToDecode
         }
-//        throw NetworkError.httpStatusCode(123)
     }
 }

@@ -1,10 +1,3 @@
-//
-//  SplashVC.swift
-//  ImageFeed
-//
-//  Created by ANTON ZVERKOV on 06.06.2025.
-//
-
 import UIKit
 
 final class SplashVC: UIViewController {
