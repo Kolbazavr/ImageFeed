@@ -37,6 +37,10 @@ enum UnsplashRequestType {
         }
     }
     
+    func queryItems(from config: AuthConfiguration) {
+        
+    }
+    
     var queryItems: [URLQueryItem]? {
         return switch self {
         case .login:
