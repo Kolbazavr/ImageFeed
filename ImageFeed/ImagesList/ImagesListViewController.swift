@@ -154,24 +154,24 @@ extension ImagesListViewController: UITableViewDelegate {
         }
     }
     
-    @MainActor
-    private func showErrorAlert(error: Error) {
-        let alert = UIAlertController(
-            title: "Что-то пошло не так",
-            message: error.localizedDescription,
-            preferredStyle: .alert
-        )
-        if !photos.isEmpty {
-            let cancelAction = UIAlertAction(title: "Ок", style: .cancel)
-            alert.addAction(cancelAction)
-        }
-        let exitAction = UIAlertAction(title: "Выйти", style: .destructive) { [weak self] _ in
-            self?.coordinator?.logout()
-        }
-        alert.addAction(exitAction)
-        
-        present(alert, animated: true)
-    }
+//    @MainActor
+//    private func showErrorAlert(error: Error) {
+//        let alert = UIAlertController(
+//            title: "Что-то пошло не так",
+//            message: error.localizedDescription,
+//            preferredStyle: .alert
+//        )
+//        if !photos.isEmpty {
+//            let cancelAction = UIAlertAction(title: "Ок", style: .cancel)
+//            alert.addAction(cancelAction)
+//        }
+//        let exitAction = UIAlertAction(title: "Выйти", style: .destructive) { [weak self] _ in
+//            self?.coordinator?.logout()
+//        }
+//        alert.addAction(exitAction)
+//
+//        present(alert, animated: true)
+//    }
     
     private func setParallax(scrollView: UIScrollView) {
         let visibleCells = tableView.visibleCells.compactMap { $0 as? ImagesListCell }
