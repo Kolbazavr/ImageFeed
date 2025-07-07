@@ -6,9 +6,11 @@ final class OAuth2Service {
     private var fetchingTokenTask: Task<String, Error>?
     private var lastCode: String?
     
-    private let fetchyFetcher = FetchyFetcher()
+    private let fetchyFetcher: ImageFeedFetcher
     private let storage: OAuth2TokenStorage = .shared
-    private init() {}
+    private init(fetcher: ImageFeedFetcher = FetchyFetcher(accessToken: OAuth2TokenStorage.shared.accessToken)) {
+        self.fetchyFetcher = fetcher
+    }
     
     @MainActor
     func fetchOAuthToken(code: String) async throws -> String {

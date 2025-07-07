@@ -2,6 +2,10 @@ import UIKit
 import Kingfisher
 
 final class ImagesListCell: UITableViewCell {
+    
+    weak var delegate: ImagesListCellDelegate?
+    var isLoadedPhoto: Bool = false
+    
     static let reuseIdentifier = "ImagesListCell"
     private let placeholderImage = UIImage(resource: .placeholder)
     
@@ -20,6 +24,7 @@ final class ImagesListCell: UITableViewCell {
         button.setImage(UIImage(resource: .likeButtonOn), for: .selected)
         button.tintColor = .ypWhite
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.isHidden = true
         return button
     }()
     
@@ -46,22 +51,30 @@ final class ImagesListCell: UITableViewCell {
         cellImage.kf.cancelDownloadTask()
     }
     
-    func loadPhoto(photo: UnsplashPhoto?, isLiked: Bool) throws {
-        guard let photo, let url = URL(string: photo.urls.small) else {
+    func loadPhoto(photo: Photo?) throws {
+        guard let photo, let url = URL(string: photo.thumbImageURL) else {
             cellImage.tintColor = .secondaryLabel
             cellImage.image = UIImage(resource: .cellStub)
             print("Bad Photo URL")
             throw URLError.invalidURL
         }
         
-        setPhotoDate(from: photo)
-        likeButton.isSelected = isLiked
+        if let createdAt = photo.createdAt {
+            dateLabel.text = DateFormatter.defaultDateTime.string(from: createdAt)
+        } else {
+            dateLabel.text = ""
+            print("Photo has no date")
+        }
+        
+        likeButton.isSelected = photo.isLiked
         
         cellImage.kf.indicatorType = .activity
-        cellImage.kf.setImage(with: url, placeholder: UIImage(), options: [.transition(.flipFromLeft(0.3))]) { [weak self] result in
+        cellImage.kf.setImage(with: url, placeholder: UIImage(resource: .cellStub), options: [.transition(.flipFromLeft(0.3))]) { [weak self] result in
             guard let self else { return }
             switch result {
             case .success:
+                likeButton.isHidden = false
+                isLoadedPhoto = true
                 break
             case .failure:
                 self.cellImage.tintColor = .secondaryLabel
@@ -75,9 +88,12 @@ final class ImagesListCell: UITableViewCell {
         cellImage.parallaxEffect(offset: offset)
     }
     
-    private func setPhotoDate(from photo: UnsplashPhoto) {
-        guard let date = ISO8601DateFormatter().date(from: photo.createdAt ?? "") else { return }
-        dateLabel.text = DateFormatter.defaultDateTime.string(from: date)
+    func setIsLiked(to state: Bool) {
+        likeButton.isSelected = state
+    }
+    
+    func lockLikeButton(_ state: Bool) {
+        likeButton.isEnabled = !state
     }
     
     private func setupCell() {
@@ -108,6 +124,6 @@ final class ImagesListCell: UITableViewCell {
     }
     
     @objc private func likeButtonTapped() {
-        likeButton.isSelected.toggle()
+        delegate?.imageListCellDidTapLike(self)
     }
 }

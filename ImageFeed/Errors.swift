@@ -1,10 +1,3 @@
-//
-//  Errors.swift
-//  ImageFeed
-//
-//  Created by ANTON ZVERKOV on 08.06.2025.
-//
-
 import Foundation
 
 enum NetworkError: Error, LocalizedError {
@@ -39,4 +32,9 @@ enum URLError: Error, LocalizedError {
 enum ProfileError: Error, LocalizedError {
     case invalidUserName
     var errorDescription: String? { "Invalid username" }
+}
+
+enum LikeError: Error, LocalizedError {
+    case invalidPhotoID
+    var errorDescription: String? { "Error with returned photo ID" }
 }

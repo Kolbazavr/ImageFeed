@@ -1,11 +1,3 @@
-//
-//  Coordocols.swift
-//  ImageFeed
-//
-//  Created by ANTON ZVERKOV on 05.06.2025.
-//
-
-//TODO: set to *Foundation* after UIImage changed to url or something:
 import UIKit
 
 protocol Coordinator: AnyObject {
@@ -30,7 +22,7 @@ protocol CoordinatedByAuthProtocol {
 }
 
 protocol FeedCoordinatorProtocol: Coordinator {
-    func showSingleImage(image: UIImage)
+    func showSingleImage(image: UIImage, fullSizeUrlString: String)
     func logout()
 }
 

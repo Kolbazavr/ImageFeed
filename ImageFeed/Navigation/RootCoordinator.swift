@@ -1,10 +1,3 @@
-//
-//  RootCoordinator.swift
-//  ImageFeed
-//
-//  Created by ANTON ZVERKOV on 05.06.2025.
-//
-
 import UIKit
 
 final class RootCoordinator: Coordinator {
