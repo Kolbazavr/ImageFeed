@@ -10,20 +10,13 @@ import Foundation
 final class WebViewPresenter: WebViewPresenterProtocol {
     var view: WebViewViewControllerProtocol?
     var authHelper: AuthHelperProtocol
-    private let requestOMatic: RequestOMatic
     
-    init(
-        requestOMatic: RequestOMatic = RequestOMatic(clientID: Constants.accessKey, accessToken: nil),
-        view: WebViewViewControllerProtocol? = nil,
-        authHelper: AuthHelperProtocol
-    ) {
-        self.requestOMatic = requestOMatic
+    init(view: WebViewViewControllerProtocol? = nil, authHelper: AuthHelperProtocol) {
         self.view = view
         self.authHelper = authHelper
     }
     
     func viewDidLoad() {
-//        view?.load(request: requestOMatic.request(for: .login))
         guard let request = authHelper.authRequest() else { return }
         view?.load(request: request)
         didUpdateProgressValue(0.0)

@@ -1,38 +1,14 @@
-//
-//  AuthHelper.swift
-//  ImageFeed
-//
-//  Created by ANTON ZVERKOV on 07.07.2025.
-//
-
 import Foundation
 
 final class AuthHelper: AuthHelperProtocol {
-    let configuration: AuthConfiguration
+    private let requestOMatic: RequestOMatic
     
     init(configuration: AuthConfiguration = .standard) {
-        self.configuration = configuration
+        self.requestOMatic = RequestOMatic(authConfig: configuration, accessToken: nil)
     }
     
     func authRequest() -> URLRequest? {
-        guard let url = authURL() else { return nil }
-        
-        return URLRequest(url: url)
-    }
-    
-    func authURL() -> URL? {
-        guard var urlComponents = URLComponents(string: configuration.authURLString) else {
-            return nil
-        }
-        
-        urlComponents.queryItems = [
-            URLQueryItem(name: "client_id", value: configuration.accessKey),
-            URLQueryItem(name: "redirect_uri", value: configuration.redirectURI),
-            URLQueryItem(name: "response_type", value: "code"),
-            URLQueryItem(name: "scope", value: configuration.accessScope)
-        ]
-        
-        return urlComponents.url
+        requestOMatic.request(for: .login)
     }
     
     func code(from url: URL) -> String? {

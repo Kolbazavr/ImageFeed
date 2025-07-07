@@ -9,9 +9,6 @@ enum Constants {
     static let apiBaseURL = URL(string: "https://api.unsplash.com")
 
     static let accessTokenKey = "accessToken"
-    
-    //Duplicate with UnsplashRequestType (not needed):
-    static let unsplashAuthorizeURLString = "https://unsplash.com/oauth/authorize"
 }
 
 enum WebKeyConstants {
@@ -30,16 +27,16 @@ struct AuthConfiguration {
     let secretKey: String
     let redirectURI: String
     let accessScope: String
-    let defaultBaseURL: URL
-    let authURLString: String
+    let noAPIbaseURL: URL?
+    let apiBaseURL: URL?
 
-    init(accessKey: String, secretKey: String, redirectURI: String, accessScope: String, authURLString: String, defaultBaseURL: URL) {
+    init(accessKey: String, secretKey: String, redirectURI: String, accessScope: String, noAPIbaseURL: URL?, apiBaseURL: URL?) {
         self.accessKey = accessKey
         self.secretKey = secretKey
         self.redirectURI = redirectURI
         self.accessScope = accessScope
-        self.defaultBaseURL = defaultBaseURL
-        self.authURLString = authURLString //<--Dublicate
+        self.noAPIbaseURL = noAPIbaseURL
+        self.apiBaseURL = apiBaseURL
     }
     
     static var standard: AuthConfiguration {
@@ -48,8 +45,8 @@ struct AuthConfiguration {
             secretKey: Constants.secretKey,
             redirectURI: Constants.redirectUri,
             accessScope: Constants.accessScope,
-            authURLString: Constants.unsplashAuthorizeURLString, //<--Dublicate
-            defaultBaseURL: Constants.noAPIbaseURL!
+            noAPIbaseURL: Constants.noAPIbaseURL,
+            apiBaseURL: Constants.apiBaseURL
         )
     }
 }
