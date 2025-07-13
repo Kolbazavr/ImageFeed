@@ -1,8 +1,17 @@
 import Foundation
 
-final class ImagesListService {
+protocol ImagesListServiceProtocol {
+    var didChangeNotification: NSNotification.Name { get }
+    var photos: [Photo] { get }
     
-    static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
+    func fetchPhotosNextPage() async throws
+    func changeLikedState(ofPhotoWithId photoId: String, to isLiked: Bool) async throws
+    func cancelPendingFetchPhotos()
+}
+
+final class ImagesListService: ImagesListServiceProtocol {
+    
+    let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
     
     private(set) var photos: [Photo] = []
     private var photoIdentifiers: Set<String> = []
@@ -54,7 +63,7 @@ final class ImagesListService {
         
         await MainActor.run {
             self.photos[index] = newPhoto
-            NotificationCenter.default.post(name: ImagesListService.didChangeNotification, object: self)
+            NotificationCenter.default.post(name: didChangeNotification, object: self)
         }
         
     }
@@ -65,6 +74,6 @@ final class ImagesListService {
         photos.append(contentsOf: newPhotos)
         lastLoadedPage = page
         
-        NotificationCenter.default.post(name: ImagesListService.didChangeNotification, object: self)
+        NotificationCenter.default.post(name: didChangeNotification, object: self)
     }
 }

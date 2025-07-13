@@ -92,6 +92,7 @@ extension WebViewViewController {
         view.backgroundColor = .ypBlack
         
         webView.navigationDelegate = self
+        webView.accessibilityIdentifier = "UnsplashWebView"
         
         progressView.progress = 0
         progressView.progressTintColor = .systemBlue

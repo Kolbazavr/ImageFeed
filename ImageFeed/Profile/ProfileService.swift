@@ -1,6 +1,11 @@
 import Foundation
 
-final class ProfileService {
+protocol ProfileServiceProtocol {
+    var profile: UnsplashUser? { get }
+    func fetchProfile(token: String) async throws
+}
+
+final class ProfileService: ProfileServiceProtocol {
     static let shared = ProfileService()
     
     private(set) var profile: UnsplashUser?

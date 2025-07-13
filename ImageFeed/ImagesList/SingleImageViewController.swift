@@ -35,6 +35,7 @@ final class SingleImageViewController: UIViewController {
         let button = UIButton()
         button.setImage(UIImage(resource: .navBackButtonWhite), for: .normal)
         button.tintColor = .ypWhite
+        button.accessibilityIdentifier = "navBackButtonWhite"
         return button
     }()
     

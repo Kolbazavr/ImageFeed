@@ -1,8 +1,14 @@
 import Foundation
 
-final class ProfileImageService {
+protocol ProfileImageServiceProtocol {
+    var didChangeNotification: Notification.Name { get }
+    var avatarURL: URL? { get }
+    func fetchProfileImageURL(username: String) async throws
+}
+
+final class ProfileImageService: ProfileImageServiceProtocol {
     static let shared = ProfileImageService()
-    static let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
+    let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
     
     private(set) var avatarURL: URL?
     private let fetchyFetcher: ImageFeedFetcher
@@ -21,7 +27,7 @@ final class ProfileImageService {
         avatarURL = mediumSizeUrl
         
         NotificationCenter.default.post(
-            name: ProfileImageService.didChangeNotification,
+            name: didChangeNotification,
             object: self,
             userInfo: ["URL": mediumSizeUrl]
         )

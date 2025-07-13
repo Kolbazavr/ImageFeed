@@ -49,6 +49,7 @@ final class ImagesListCell: UITableViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         cellImage.kf.cancelDownloadTask()
+        delegate = nil
     }
     
     func loadPhoto(photo: Photo?) throws {
@@ -93,7 +94,8 @@ final class ImagesListCell: UITableViewCell {
     }
     
     func lockLikeButton(_ state: Bool) {
-        likeButton.isEnabled = !state
+        likeButton.isUserInteractionEnabled = !state
+//        likeButton.isEnabled = !state
     }
     
     private func setupCell() {

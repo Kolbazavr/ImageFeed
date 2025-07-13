@@ -1,6 +1,6 @@
 import UIKit
 
-protocol Coordinator: AnyObject {
+public protocol Coordinator: AnyObject {
     var childCoordinators: [Coordinator] { get set }
     func start()
 }
@@ -10,34 +10,34 @@ extension Coordinator {
     }
 }
 
-protocol AuthCoordinatorProtocol: Coordinator {
+public protocol AuthCoordinatorProtocol: Coordinator {
     var coordinatorDelegate: AuthCoordinatorDelegate? { get set }
     func showWebView()
     func didAuth(with code: String)
     func navigateBack()
 }
 
-protocol CoordinatedByAuthProtocol {
+public protocol CoordinatedByAuthProtocol {
     var coordinator: AuthCoordinatorProtocol? { get set }
 }
 
-protocol FeedCoordinatorProtocol: Coordinator {
+public protocol FeedCoordinatorProtocol: Coordinator {
     func showSingleImage(image: UIImage, fullSizeUrlString: String)
     func logout()
 }
 
-protocol CoordinatedByFeedProtocol {
+public protocol CoordinatedByFeedProtocol {
     var coordinator: FeedCoordinatorProtocol? { get set }
 }
 
-protocol AuthCoordinatorDelegate: AnyObject {
+public protocol AuthCoordinatorDelegate: AnyObject {
     func authCoordinatorDidAuthThing(_ coordinator: AuthCoordinatorProtocol, with code: String)
 }
 
-protocol FeedCoordinatorDelegate: AnyObject {
+public protocol FeedCoordinatorDelegate: AnyObject {
     func feedCoordinatorDidLogout(_ coordinator: FeedCoordinatorProtocol)
 }
 
-protocol SplashViewControllerDelegate: AnyObject {
+public protocol SplashViewControllerDelegate: AnyObject {
     func splashDidCheckLogin(isLoggedIn: Bool)
 }
