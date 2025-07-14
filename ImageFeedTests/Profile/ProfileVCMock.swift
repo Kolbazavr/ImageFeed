@@ -1,7 +1,7 @@
 @testable import ImageFeed
 import Foundation
 
-final class ProfileVCSpy: ProfileViewProtocol {
+final class ProfileVCMock: ProfileViewProtocol {
     var updateAvatarCalled = false
     var updateProfileDetailsCalled = false
     var confirmLogoutCalled = false

@@ -1,7 +1,7 @@
 @testable import ImageFeed
 import Foundation
 
-final class ProfilePresenterSpy: ProfilePresenterProtocol {
+final class ProfilePresenterMock: ProfilePresenterProtocol {
     var viewDidLoadCalled = false
     var didTapLogoutCalled = false
     var view: (any ImageFeed.ProfileViewProtocol)?

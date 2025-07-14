@@ -1,7 +1,7 @@
 @testable import ImageFeed
 import Foundation
 
-final class ImagesListVCSpy: ImagesListViewProtocol {
+final class ImagesListVCMock: ImagesListViewProtocol {
     var upateTableViewAnimatedCalledCount = 0
     var alertShowen: Bool = false
     var loadingError: Error?

@@ -18,7 +18,7 @@ final class ImageFeedTests: XCTestCase {
     
     func testPresenterFetchesImages() {
         // Given
-        let imagesListVC = ImagesListVCSpy()
+        let imagesListVC = ImagesListVCMock()
         let presenter = ImagesListPresenter(view: imagesListVC, service: ImagesListService(fetcher: ImagesListFetcherMock()))
         imagesListVC.presenter = presenter
         
@@ -40,7 +40,7 @@ final class ImageFeedTests: XCTestCase {
     
     func testPresenterShowsErrorWhenFetchingImagesFails() {
         // Given
-        let imagesListVC = ImagesListVCSpy()
+        let imagesListVC = ImagesListVCMock()
         let presenter = ImagesListPresenter(view: imagesListVC, service: ImagesListService(fetcher: ImagesListFetcherMock(getsError: true)))
         imagesListVC.presenter = presenter
         
