@@ -24,7 +24,6 @@ final class ProfilePresenter: ProfilePresenterProtocol {
     deinit { if let observer = serviceObserver { NotificationCenter.default.removeObserver(observer) } }
     
     func viewDidLoad() {
-        //
         updateAvatar(from: imageService.avatarURL)
         updateProfileDetails()
     }

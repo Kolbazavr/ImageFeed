@@ -1,7 +1,7 @@
 @testable import ImageFeed
 import Foundation
 
-final class ImagesListPresenterSpy: ImagesListPresenterProtocol {
+final class ImagesListPresenterMock: ImagesListPresenterProtocol {
     var viewDidLoadCalled = false
     var didScrollToBottomCalled = false
     

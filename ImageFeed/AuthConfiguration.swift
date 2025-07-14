@@ -29,15 +29,6 @@ struct AuthConfiguration {
     let accessScope: String
     let noAPIbaseURL: URL?
     let apiBaseURL: URL?
-
-    init(accessKey: String, secretKey: String, redirectURI: String, accessScope: String, noAPIbaseURL: URL?, apiBaseURL: URL?) {
-        self.accessKey = accessKey
-        self.secretKey = secretKey
-        self.redirectURI = redirectURI
-        self.accessScope = accessScope
-        self.noAPIbaseURL = noAPIbaseURL
-        self.apiBaseURL = apiBaseURL
-    }
     
     static var standard: AuthConfiguration {
         return AuthConfiguration(

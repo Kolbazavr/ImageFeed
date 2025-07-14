@@ -12,21 +12,23 @@ final class ImageFeedUITests: XCTestCase {
     }
     
     func testAuth() throws {
+        // Given
         app.buttons["Authenticate"].tap()
         
         let webView = app.webViews["UnsplashWebView"]
         
-        XCTAssertTrue(webView.waitForExistence(timeout: 5))
+        XCTAssertTrue(webView.waitForExistence(timeout: 5), "WebView не появился")
         
         let loginTextField = webView.descendants(matching: .textField).element
-        XCTAssertTrue(loginTextField.waitForExistence(timeout: 5))
+        XCTAssertTrue(loginTextField.waitForExistence(timeout: 5), "Поле логина не найдено")
         
+        // When
         loginTextField.tap()
         loginTextField.typeText("login@example.com")
         webView.swipeUp()
         
         let passwordTextField = webView.descendants(matching: .secureTextField).element
-        XCTAssertTrue(passwordTextField.waitForExistence(timeout: 5))
+        XCTAssertTrue(passwordTextField.waitForExistence(timeout: 5), "Поле пароля не найдено")
         
         passwordTextField.tap()
         passwordTextField.typeText("password")
@@ -34,10 +36,11 @@ final class ImageFeedUITests: XCTestCase {
         
         webView.buttons["Login"].tap()
 
+        // Then
         let tablesQuery = app.tables
         let cell = tablesQuery.children(matching: .cell).element(boundBy: 0)
         
-        XCTAssertTrue(cell.waitForExistence(timeout: 5))
+        XCTAssertTrue(cell.waitForExistence(timeout: 5), "Ячейка ленты не появилась после авторизации")
     }
     
     func testFeed() throws {

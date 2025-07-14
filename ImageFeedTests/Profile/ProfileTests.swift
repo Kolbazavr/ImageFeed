@@ -3,22 +3,28 @@ import XCTest
 
 final class ProfileTests: XCTestCase {
     func testViewControllerCallsViewDidLoad() {
+        // Given
         let profileVC = ProfileViewController()
         let presenter = ProfilePresenterSpy()
         profileVC.presenter = presenter
         
+        // When
         _ = profileVC.view
         
+        // Then
         XCTAssertTrue(presenter.viewDidLoadCalled)
     }
     
     func testLogout() {
+        // Given
         let profileVC = ProfileVCSpy()
         let presenter = ProfilePresenter(view: profileVC, service: ProfileServiceMock(), imageService: ProfileImageServiceMock())
         profileVC.presenter = presenter
         
+        // When
         presenter.didTapLogout()
         
+        // Then
         let predicate = NSPredicate { _, _ in
             profileVC.confirmLogoutCalled
         }
@@ -31,12 +37,14 @@ final class ProfileTests: XCTestCase {
     }
     
     func testPresenterCallsUpdateAvatar() {
+        // Given
         let profileVCSpy = ProfileVCSpy()
         let profileService = ProfileServiceMock()
         let profileImageService = ProfileImageServiceMock()
         let presenter = ProfilePresenter(view: profileVCSpy, service: profileService, imageService: profileImageService)
         profileVCSpy.presenter = presenter
         
+        // When
         Task {
             try? await profileImageService.fetchProfileImageURL(username: "")
             try? await profileService.fetchProfile(token: "")
@@ -45,6 +53,7 @@ final class ProfileTests: XCTestCase {
             }
         }
         
+        // Then
         let predicate = NSPredicate { _, _ in
             profileVCSpy.updateAvatarCalled
         }

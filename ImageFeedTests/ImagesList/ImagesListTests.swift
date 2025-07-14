@@ -3,23 +3,29 @@ import XCTest
 
 final class ImageFeedTests: XCTestCase {
     func testViewControllerCallsViewDidLoad() {
+        // Given
         let imagesListVC = ImagesListViewController()
-        let presenter = ImagesListPresenterSpy()
+        let presenter = ImagesListPresenterMock()
         imagesListVC.presenter = presenter
         presenter.view = imagesListVC
         
+        // When
         _ = imagesListVC.view
         
+        // Then
         XCTAssertTrue(presenter.viewDidLoadCalled)
     }
     
     func testPresenterFetchesImages() {
+        // Given
         let imagesListVC = ImagesListVCSpy()
         let presenter = ImagesListPresenter(view: imagesListVC, service: ImagesListService(fetcher: ImagesListFetcherMock()))
         imagesListVC.presenter = presenter
         
+        // When
         presenter.viewDidLoad()
         
+        // Then
         let predicate = NSPredicate { _, _ in
             !presenter.unsplashPhotos.isEmpty
         }
@@ -33,12 +39,15 @@ final class ImageFeedTests: XCTestCase {
     }
     
     func testPresenterShowsErrorWhenFetchingImagesFails() {
+        // Given
         let imagesListVC = ImagesListVCSpy()
         let presenter = ImagesListPresenter(view: imagesListVC, service: ImagesListService(fetcher: ImagesListFetcherMock(getsError: true)))
         imagesListVC.presenter = presenter
         
+        // When
         presenter.viewDidLoad()
         
+        // Then
         let predicate = NSPredicate { _, _ in
             imagesListVC.alertShowen
         }

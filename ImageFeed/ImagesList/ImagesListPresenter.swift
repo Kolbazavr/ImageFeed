@@ -24,7 +24,6 @@ final class ImagesListPresenter: ImagesListPresenterProtocol {
         addServiceObserver(for: service)
     }
     
-    //check if this needed:
     deinit { if let observer = serviceObserver { NotificationCenter.default.removeObserver(observer) } }
     
     func viewDidLoad() {
