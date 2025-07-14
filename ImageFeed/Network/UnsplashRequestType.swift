@@ -9,11 +9,10 @@ enum UnsplashRequestType {
     case photoPage(page: Int, perPage: Int)
     case likeAction(identifier: String, isLiked: Bool)
     
-    
-    var baseURL: URL? {
+    func baseURL(from config: AuthConfiguration) -> URL? {
         return switch self {
-        case .login, .accessToken: Constants.noAPIbaseURL
-        default: Constants.apiBaseURL
+        case .login, .accessToken: config.noAPIbaseURL
+        default: config.apiBaseURL
         }
     }
     
@@ -37,21 +36,21 @@ enum UnsplashRequestType {
         }
     }
     
-    var queryItems: [URLQueryItem]? {
+    func queryItems(from config: AuthConfiguration) -> [URLQueryItem]? {
         return switch self {
         case .login:
             [
-                WebKeyConstants.clientID : Constants.accessKey,
-                WebKeyConstants.redirectURI : Constants.redirectUri,
+                WebKeyConstants.clientID : config.accessKey,
+                WebKeyConstants.redirectURI : config.redirectURI,
                 WebKeyConstants.responseType : WebKeyConstants.code,
-                WebKeyConstants.scope : Constants.accessScope
+                WebKeyConstants.scope : config.accessScope
             ]
                 .compactMap { URLQueryItem(name: $0, value: $1) }
         case .accessToken(let code):
             [
-                WebKeyConstants.clientID : Constants.accessKey,
-                WebKeyConstants.clientSecret : Constants.secretKey,
-                WebKeyConstants.redirectURI : Constants.redirectUri,
+                WebKeyConstants.clientID : config.accessKey,
+                WebKeyConstants.clientSecret : config.secretKey,
+                WebKeyConstants.redirectURI : config.redirectURI,
                 WebKeyConstants.code : code,
                 WebKeyConstants.grantType : WebKeyConstants.authorizationCode
             ]

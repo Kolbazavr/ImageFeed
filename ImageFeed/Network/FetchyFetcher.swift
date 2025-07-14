@@ -5,8 +5,8 @@ final class FetchyFetcher: ImageFeedFetcher {
     private let decoder: JSONDecoder
     private let session: URLSession
     
-    init(accessToken: String? = nil) {
-        self.requestOMatic = .init(accessToken: accessToken)
+    init(authConfig: AuthConfiguration = AuthConfiguration.standard, accessToken: String? = nil) {
+        self.requestOMatic = .init(authConfig: authConfig, accessToken: accessToken)
         self.decoder = .init()
         self.session = .shared
     }

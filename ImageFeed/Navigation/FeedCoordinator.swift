@@ -45,7 +45,12 @@ final class FeedCoordinator: FeedCoordinatorProtocol {
     
     private func createImageListNav() -> UINavigationController {
         let imageListVC = ImagesListViewController()
+        let imagesListSerivce = ImagesListService()
+        let imagesListPresenter = ImagesListPresenter(view: imageListVC, service: imagesListSerivce)
+        
         imageListVC.coordinator = self
+        imageListVC.presenter = imagesListPresenter
+        
         let imageListNavController = UINavigationController(rootViewController: imageListVC)
         imageListNavController.navigationBar.isHidden = true
         imageListNavController.tabBarItem = UITabBarItem(
@@ -58,7 +63,13 @@ final class FeedCoordinator: FeedCoordinatorProtocol {
     
     private func createProfileNav() -> UINavigationController {
         let profileVC = ProfileViewController()
+        let profileService: ProfileService = .shared
+        let profileImageService: ProfileImageService = .shared
+        let profilePresenter = ProfilePresenter(view: profileVC, service: profileService, imageService: profileImageService)
+        
         profileVC.coordinator = self
+        profileVC.presenter = profilePresenter
+        
         let profileNavController = UINavigationController(rootViewController: profileVC)
         profileNavController.navigationBar.isHidden = true
         profileNavController.tabBarItem = UITabBarItem(

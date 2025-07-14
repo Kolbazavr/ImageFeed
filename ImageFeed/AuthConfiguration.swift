@@ -11,7 +11,7 @@ enum Constants {
     static let accessTokenKey = "accessToken"
 }
 
-public enum WebKeyConstants {
+enum WebKeyConstants {
     static let clientID = "client_id"
     static let clientSecret = "client_secret"
     static let redirectURI = "redirect_uri"
@@ -20,4 +20,24 @@ public enum WebKeyConstants {
     static let grantType = "grant_type"
     static let authorizationCode = "authorization_code"
     static let code = "code"
+}
+
+struct AuthConfiguration {
+    let accessKey: String
+    let secretKey: String
+    let redirectURI: String
+    let accessScope: String
+    let noAPIbaseURL: URL?
+    let apiBaseURL: URL?
+    
+    static var standard: AuthConfiguration {
+        return AuthConfiguration(
+            accessKey: Constants.accessKey,
+            secretKey: Constants.secretKey,
+            redirectURI: Constants.redirectUri,
+            accessScope: Constants.accessScope,
+            noAPIbaseURL: Constants.noAPIbaseURL,
+            apiBaseURL: Constants.apiBaseURL
+        )
+    }
 }

@@ -1,13 +1,20 @@
 import UIKit
-import WebKit
 import Kingfisher
 
-final class ProfileViewController: UIViewController, CoordinatedByFeedProtocol {
+protocol ProfileViewProtocol: AnyObject {
+    var presenter: ProfilePresenterProtocol? { get set }
+    var coordinator: FeedCoordinatorProtocol? { get set }
+    var loadingIndicator: SomeLoadingIndicator { get }
     
+    func updateAvatar(from url: URL)
+    func updateProfileDetails(profile: UnsplashUser)
+    func confirmLogout() async -> Bool
+}
+
+final class ProfileViewController: UIViewController, CoordinatedByFeedProtocol, ProfileViewProtocol {
     weak var coordinator: FeedCoordinatorProtocol?
-    
-    private var profileImageServiceObserver: NSObjectProtocol?
-    private let profileService: ProfileService = .shared
+    var presenter: ProfilePresenterProtocol?
+    let loadingIndicator: SomeLoadingIndicator = .shared
     
     private let avatarImageView = UIImageView()
     private let nameLabel = UILabel()
@@ -18,39 +25,30 @@ final class ProfileViewController: UIViewController, CoordinatedByFeedProtocol {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        updateProfileDetails(profile: profileService.profile)
-        setupObserver()
-        updateAvatar(from: ProfileImageService.shared.avatarURL)
+        presenter?.viewDidLoad()
     }
     
-    private func setupObserver() {
-        profileImageServiceObserver = NotificationCenter.default
-            .addObserver(
-                forName: ProfileImageService.didChangeNotification,
-                object: nil,
-                queue: .main
-            ) { [weak self] notification in
-                guard let self = self else { return }
-                self.updateAvatar(from: notification)
-            }
-    }
-    
-    private func updateAvatar(from notification: Notification) {
-        let avatarURL = notification.userInfo?["URL"] as? URL
-        updateAvatar(from: avatarURL)
-    }
-    
-    private func updateAvatar(from url: URL?) {
-        guard let url else { return }
+    func updateAvatar(from url: URL) {
         let processor = RoundCornerImageProcessor(cornerRadius: 35)
         avatarImageView.kf.setImage(with: url, placeholder: UIImage(systemName: "ev.plug.dc.nacs.fill"), options: [.processor(processor)])
     }
     
-    private func updateProfileDetails(profile: UnsplashUser?) {
-        guard let profile else { return }
+    func updateProfileDetails(profile: UnsplashUser) {
         loginNameLabel.text = "@\(profile.username)"
         nameLabel.text = profile.nameToDisplay
         descriptionLabel.text = profile.bio
+    }
+    
+    func confirmLogout() async -> Bool {
+        await showConfirmationAlert(
+            title: "Пока, пока!",
+            message: "Уверены, что хотите выйти?",
+            cancelText: "Нет",
+            confirmActionText: "Да")
+    }
+    
+    @objc private func didTapLogoutButton() {
+        presenter?.didTapLogout()
     }
     
     private func setupUI() {
@@ -73,6 +71,7 @@ final class ProfileViewController: UIViewController, CoordinatedByFeedProtocol {
         
         logoutButton.setImage(.logoutButton, for: .normal)
         logoutButton.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
+        logoutButton.accessibilityIdentifier = "logoutButton"
         
         [avatarImageView, nameLabel, loginNameLabel, descriptionLabel, logoutButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
@@ -103,24 +102,5 @@ final class ProfileViewController: UIViewController, CoordinatedByFeedProtocol {
             logoutButton.widthAnchor.constraint(equalToConstant: 44),
             logoutButton.heightAnchor.constraint(equalToConstant: 44)
         ])
-    }
-    
-    @objc private func didTapLogoutButton() {
-        Task {
-            if await showConfirmationAlert(title: "Пока, пока!", message: "Уверены, что хотите выйти?", cancelText: "Нет", confirmActionText: "Да") {
-                assert(Thread.isMainThread)
-                UIBlockingProgressHUD.show()
-                let cookieStore = WKWebsiteDataStore.default().httpCookieStore
-                let cookies = await cookieStore.allCookies()
-                for cookie in cookies { await cookieStore.deleteCookie(cookie) }
-
-                let websiteDataTypes = Set([WKWebsiteDataTypeCookies, WKWebsiteDataTypeLocalStorage])
-                await WKWebsiteDataStore.default().removeData(ofTypes: websiteDataTypes, modifiedSince: Date.distantPast)
-                
-                OAuth2Service.shared.clearAccessToken()
-                UIBlockingProgressHUD.hide()
-                coordinator?.logout()
-            }
-        }
     }
 }

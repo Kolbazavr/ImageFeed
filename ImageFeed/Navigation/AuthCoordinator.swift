@@ -32,6 +32,11 @@ final class AuthCoordinator: AuthCoordinatorProtocol {
     
     func showWebView() {
         let webViewController = WebViewViewController()
+        let authHelper = AuthHelper()
+        
+        let webViewPresenter = WebViewPresenter(view: webViewController, authHelper: authHelper)
+        webViewController.presenter = webViewPresenter
+        
         webViewController.delegate = navigationController.topViewController as? WebViewViewControllerDelegate
         navigationController.pushViewController(webViewController, animated: true)
     }

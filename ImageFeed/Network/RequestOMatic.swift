@@ -1,16 +1,16 @@
 import Foundation
 
 final class RequestOMatic {
-    private let clientID: String
+    private let config: AuthConfiguration
     private var accessToken: String?
     
-    init(clientID: String = Constants.accessKey, accessToken: String? = nil) {
-        self.clientID = clientID
+    init(authConfig: AuthConfiguration, accessToken: String? = nil) {
+        self.config = authConfig
         self.accessToken = accessToken
     }
     
     func request(for requestType: UnsplashRequestType) -> URLRequest {
-        guard let baseURL = requestType.baseURL else {
+        guard let baseURL = requestType.baseURL(from: config) else {
             print(#function, "Failed to create URLRequest")
             fatalError("Something wrong with baseURL")
         }
@@ -19,7 +19,7 @@ final class RequestOMatic {
             fatalError("Something wrong with baseURL components")
         }
         components.path = requestType.path
-        components.queryItems = requestType.queryItems
+        components.queryItems = requestType.queryItems(from: config)
         
         guard let componentsURL = components.url else {
             print(#function, "I dunno what could go wrong here")
@@ -35,7 +35,7 @@ final class RequestOMatic {
         case (.none, .accessToken): //I don't have token and requesting for token
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         default: //I don't have token and requesting for public thingy where it is not needed
-            request.setValue("Client-ID \(clientID)", forHTTPHeaderField: "Authorization")
+            request.setValue("Client-ID \(config.accessKey)", forHTTPHeaderField: "Authorization")
         }
         return request
     }

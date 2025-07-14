@@ -39,6 +39,7 @@ extension AuthViewController {
         loginButton.tintColor = .ypBlack
         loginButton.layer.cornerRadius = 16
         loginButton.layer.masksToBounds = true
+        loginButton.accessibilityIdentifier = "Authenticate"
         loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
         
         [uselessLogo, loginButton].forEach {
